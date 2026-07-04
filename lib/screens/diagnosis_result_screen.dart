@@ -298,14 +298,15 @@ class _DiagnosisResultScreenState extends State<DiagnosisResultScreen> {
 
             const SizedBox(height: AppTheme.spacingM),
 
-            // Severity Badge
+
+            // Severity Badge (sekarang menampilkan tingkat kepercayaan)
             _SeverityBadge(severity: _diagnosis!.severity),
 
             const SizedBox(height: AppTheme.spacingL),
 
             // Description
             const Text(
-              'Deskripsi',
+              'Informasi Tanaman',
               style: AppTheme.titleMedium,
             ),
             const SizedBox(height: AppTheme.spacingS),
@@ -315,6 +316,28 @@ class _DiagnosisResultScreenState extends State<DiagnosisResultScreen> {
             ),
 
             const SizedBox(height: AppTheme.spacingL),
+
+            // Kemungkinan spesies alternatif
+            if (_diagnosis!.symptoms.isNotEmpty) ...[
+              const Text(
+                'Kemungkinan Spesies',
+                style: AppTheme.titleMedium,
+              ),
+              const SizedBox(height: AppTheme.spacingS),
+              ..._diagnosis!.symptoms.map((s) => Padding(
+                padding: const EdgeInsets.only(bottom: AppTheme.spacingXS),
+                child: Row(
+                  children: [
+                    const Icon(Icons.eco_rounded, size: 16, color: AppTheme.lightGreen),
+                    const SizedBox(width: AppTheme.spacingS),
+                    Expanded(
+                      child: Text(s, style: AppTheme.bodyMedium),
+                    ),
+                  ],
+                ),
+              )),
+              const SizedBox(height: AppTheme.spacingL),
+            ],
 
             // Care Guides Icons
             const Text(
@@ -377,14 +400,14 @@ class _DiagnosisResultScreenState extends State<DiagnosisResultScreen> {
                     borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                   ),
                   child: const Icon(
-                    Icons.healing_rounded,
+                    Icons.spa_rounded,
                     color: AppTheme.primaryGreen,
                     size: 24,
                   ),
                 ),
                 const SizedBox(width: AppTheme.spacingM),
                 const Text(
-                  'Langkah Penanganan',
+                  'Tips Perawatan Tanaman',
                   style: AppTheme.titleMedium,
                 ),
               ],

@@ -72,6 +72,21 @@ class PlantDiagnosis {
     String imagePath,
     String diagnosisId,
   ) {
+    // ── Lapisan validasi kedua: cek is_plant di dalam model ──
+    // Plant.id v3 mengembalikan result.is_plant dengan probability dan binary flag.
+    final isPlantData = apiData['result']?['is_plant'];
+    if (isPlantData != null) {
+      final probability = (isPlantData['probability'] as num?)?.toDouble() ?? 1.0;
+      final binary = isPlantData['binary'] as bool? ?? true;
+      if (!binary || probability < 0.2) {
+        final pct = (probability * 100).toStringAsFixed(0);
+        throw Exception(
+          'Gambar yang difoto bukan tanaman ($pct% kemungkinan tanaman). '
+          'Arahkan kamera ke daun atau bagian tanaman yang jelas.',
+        );
+      }
+    }
+
     // Extract the best matching disease
     final suggestions = apiData['health_assessment']?['diseases'] as List<dynamic>? ?? [];
     
@@ -153,6 +168,103 @@ class PlantDiagnosis {
       isSaved: false,
     );
   }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Factory: buat dari respons Pl@ntNet API v2
+  // Pl@ntNet mengidentifikasi SPESIES tanaman, bukan penyakit.
+  // Kita tampilkan nama spesies sebagai hasil identifikasi + saran perawatan umum.
+  // ─────────────────────────────────────────────────────────────────────────
+  factory PlantDiagnosis.fromPlantNetResponse(
+    Map<String, dynamic> apiData,
+    String imagePath,
+    String diagnosisId,
+  ) {
+    final results = apiData['results'] as List<dynamic>? ?? [];
+
+    if (results.isEmpty) {
+      return PlantDiagnosis(
+        id: diagnosisId,
+        imagePath: imagePath,
+        diseaseName: 'Tanaman Tidak Dikenali',
+        commonName: 'Unknown Plant',
+        accuracy: 0.0,
+        severity: 'unknown',
+        symptoms: ['Tidak dapat mengidentifikasi tanaman dari gambar ini.'],
+        treatments: [
+          'Coba ambil foto dengan pencahayaan yang lebih baik',
+          'Pastikan daun atau bunga terlihat jelas',
+          'Hindari foto yang buram atau terlalu jauh',
+        ],
+        description: 'Aplikasi tidak dapat mengidentifikasi tanaman dari gambar yang diberikan.',
+        diagnosisDate: DateTime.now(),
+        isSaved: false,
+      );
+    }
+
+    // Ambil hasil terbaik (index 0 sudah diurutkan berdasarkan skor tertinggi)
+    final top = results[0] as Map<String, dynamic>;
+    final score = (top['score'] as num?)?.toDouble() ?? 0.0;
+    final species = top['species'] as Map<String, dynamic>? ?? {};
+
+    final scientificName = species['scientificNameWithoutAuthor'] as String? ?? 'Unknown';
+    final authorship = species['scientificNameAuthorship'] as String? ?? '';
+    final genus = (species['genus'] as Map<String, dynamic>?)?['scientificNameWithoutAuthor'] as String? ?? '';
+    final family = (species['family'] as Map<String, dynamic>?)?['scientificNameWithoutAuthor'] as String? ?? '';
+    final commonNames = (species['commonNames'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [];
+    final commonName = commonNames.isNotEmpty ? commonNames.first : scientificName;
+
+    // Tentukan tingkat kepercayaan identifikasi
+    String severity;
+    if (score >= 0.7) {
+      severity = 'sehat'; // identifikasi sangat yakin
+    } else if (score >= 0.4) {
+      severity = 'ringan'; // identifikasi cukup yakin
+    } else {
+      severity = 'sedang'; // identifikasi kurang yakin
+    }
+
+    // Bangun deskripsi dari data yang tersedia
+    final scorePct = (score * 100).toStringAsFixed(1);
+    final description = 'Tanaman ini teridentifikasi sebagai $scientificName $authorship '
+        '(Famili: $family, Genus: $genus) dengan tingkat kepercayaan $scorePct%. '
+        '${commonNames.isNotEmpty ? "Nama umum: ${commonNames.join(', ')}." : ""}';
+
+    // Saran perawatan umum
+    final treatments = [
+      'Pastikan tanaman mendapatkan cahaya yang sesuai dengan jenisnya',
+      'Siram secara teratur — cek kelembaban tanah sebelum menyiram',
+      'Gunakan pupuk yang sesuai untuk keluarga ${family.isNotEmpty ? family : "tanaman ini"}',
+      'Periksa secara rutin adanya tanda-tanda hama atau penyakit pada daun',
+      'Jaga sirkulasi udara yang baik di sekitar tanaman',
+    ];
+
+    // Daftar nama alternatif dari semua hasil teratas
+    final alternativeNames = results
+        .take(3)
+        .map((r) {
+          final sp = r['species'] as Map<String, dynamic>? ?? {};
+          final sc = (r['score'] as num?)?.toDouble() ?? 0.0;
+          final name = sp['scientificNameWithoutAuthor'] as String? ?? 'Unknown';
+          final pct = (sc * 100).toStringAsFixed(0);
+          return 'Kemungkinan $name ($pct%)';
+        })
+        .toList();
+
+    return PlantDiagnosis(
+      id: diagnosisId,
+      imagePath: imagePath,
+      diseaseName: scientificName,
+      commonName: commonName,
+      accuracy: score,
+      severity: severity,
+      symptoms: alternativeNames.isNotEmpty ? alternativeNames : ['Identifikasi berhasil'],
+      treatments: treatments,
+      description: description,
+      diagnosisDate: DateTime.now(),
+      isSaved: false,
+    );
+  }
+
 
   // Create a copy with modified fields
   PlantDiagnosis copyWith({

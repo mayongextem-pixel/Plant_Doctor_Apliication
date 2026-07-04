@@ -3,10 +3,13 @@ class AppConstants {
   static const String appName = 'Plant Doctor';
   static const String appVersion = '1.0.0';
 
-  // API Configuration
-  static const String apiBaseUrl = 'https://plant.id/api/v3';
-  static const String apiKey = 'YOUR_API_KEY_HERE';
-  
+  // API Configuration — Pl@ntNet (gratis 500 req/hari)
+  // Daftar di: https://my.plantnet.org → My Account → API Keys
+  static const String apiBaseUrl = 'https://my-api.plantnet.org/v2';
+  static const String apiKey = '2b10TPnWALxXCXCODC1knvmI';
+  static const String plantNetProject =
+      'all'; // bisa ganti ke 'the-plant-list' untuk akurasi lebih tinggi
+
   // Storage Keys
   static const String keyPlantHistory = 'plant_history';
   static const String keyUserSettings = 'user_settings';
