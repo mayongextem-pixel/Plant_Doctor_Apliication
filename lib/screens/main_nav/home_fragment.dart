@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
-import '../config/app_theme.dart';
-import '../utils/page_transitions.dart';
-import 'camera_screen.dart';
+import '../../config/app_theme.dart';
+import '../../utils/page_transitions.dart';
+import '../menus/riwayat_screen.dart';
+import '../menus/artikel_screen.dart';
+import '../menus/tips_harian_screen.dart';
+import '../menus/tersimpan_screen.dart';
 
-/// Modern Dashboard Screen following update_design.md
-/// Features: Search bar, Quick action menu, Promotional banner, Grid collection
-class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key});
+/// Home Fragment — extracted body content from DashboardScreen.
+/// Does NOT include BottomNavigationBar or FAB (those live in MainScreen).
+class HomeFragment extends StatefulWidget {
+  const HomeFragment({super.key});
 
   @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
+  State<HomeFragment> createState() => _HomeFragmentState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
-  int _currentBottomNavIndex = 0;
+class _HomeFragmentState extends State<HomeFragment> {
   final TextEditingController _searchController = TextEditingController();
 
   // Mock data for plant history
@@ -106,13 +108,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ],
         ),
       ),
-
-      // Prominent Center-Docked FAB for Camera
-      floatingActionButton: _buildCameraFAB(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-
-      // Bottom Navigation Bar
-      bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
 
@@ -164,7 +159,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  /// Quick Action Menu (Horizontal scroll)
+  /// Quick Action Menu (Horizontal scroll) — wired to actual screens
   Widget _buildQuickActionMenu() {
     final quickActions = [
       QuickAction(
@@ -172,7 +167,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         label: 'Riwayat',
         color: AppTheme.primaryGreen,
         onTap: () {
-          // TODO: Navigate to history
+          Navigator.of(context).push(
+            PageTransitions.slideAndFadeTransition(const RiwayatScreen()),
+          );
         },
       ),
       QuickAction(
@@ -180,7 +177,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         label: 'Artikel',
         color: AppTheme.accentOrange,
         onTap: () {
-          // TODO: Navigate to articles
+          Navigator.of(context).push(
+            PageTransitions.slideAndFadeTransition(const ArtikelScreen()),
+          );
         },
       ),
       QuickAction(
@@ -188,7 +187,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         label: 'Tips Harian',
         color: AppTheme.accentYellow,
         onTap: () {
-          // TODO: Navigate to tips
+          Navigator.of(context).push(
+            PageTransitions.slideAndFadeTransition(const TipsHarianScreen()),
+          );
         },
       ),
       QuickAction(
@@ -196,7 +197,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         label: 'Tersimpan',
         color: AppTheme.lightGreen,
         onTap: () {
-          // TODO: Navigate to saved
+          Navigator.of(context).push(
+            PageTransitions.slideAndFadeTransition(const TersimpanScreen()),
+          );
         },
       ),
     ];
@@ -222,7 +225,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       margin: const EdgeInsets.symmetric(horizontal: AppTheme.spacingM),
       child: InkWell(
         onTap: () {
-          // TODO: Show daily tip details
+          Navigator.of(context).push(
+            PageTransitions.slideAndFadeTransition(const TipsHarianScreen()),
+          );
         },
         borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
         child: Container(
@@ -258,7 +263,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       decoration: BoxDecoration(
                         color: AppTheme.white.withValues(alpha: 0.3),
-                        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                        borderRadius:
+                            BorderRadius.circular(AppTheme.radiusSmall),
                       ),
                       child: const Text(
                         'Tips Hari Ini',
@@ -332,7 +338,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               const SizedBox(height: AppTheme.spacingS),
               TextButton.icon(
                 onPressed: () {
-                  _navigateToCamera();
+                  // Camera navigation handled by MainScreen FAB
                 },
                 icon: const Icon(Icons.camera_alt_rounded),
                 label: const Text('Mulai Scan'),
@@ -362,82 +368,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
   }
-
-  /// Prominent Center-Docked FAB for Camera
-  Widget _buildCameraFAB() {
-    return Container(
-      width: 72,
-      height: 72,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: LinearGradient(
-          colors: [
-            AppTheme.lightGreen,
-            AppTheme.primaryGreen,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primaryGreen.withValues(alpha: 0.4),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: FloatingActionButton(
-        onPressed: _navigateToCamera,
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        child: const Icon(
-          Icons.camera_alt_rounded,
-          size: 32,
-          color: AppTheme.white,
-        ),
-      ),
-    );
-  }
-
-  /// Bottom Navigation Bar
-  Widget _buildBottomNavigationBar() {
-    return BottomNavigationBar(
-      currentIndex: _currentBottomNavIndex,
-      onTap: (index) {
-        setState(() {
-          _currentBottomNavIndex = index;
-        });
-      },
-      type: BottomNavigationBarType.fixed,
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home_rounded),
-          label: 'Beranda',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.collections_rounded),
-          label: 'Koleksi',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.article_rounded),
-          label: 'Artikel',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person_rounded),
-          label: 'Profil',
-        ),
-      ],
-    );
-  }
-
-  void _navigateToCamera() {
-    Navigator.of(context).push(
-      PageTransitions.slideAndFadeTransition(
-        const CameraScreen(),
-      ),
-    );
-  }
 }
+
+// ---------------------------------------------------------------------------
+// Private helper widgets
+// ---------------------------------------------------------------------------
 
 /// Quick Action Card Widget
 class _QuickActionCard extends StatelessWidget {
@@ -603,9 +538,7 @@ class _StatusBadge extends StatelessWidget {
         vertical: AppTheme.spacingXS,
       ),
       decoration: BoxDecoration(
-        color: isHealthy
-            ? AppTheme.successGreen
-            : AppTheme.errorRed,
+        color: isHealthy ? AppTheme.successGreen : AppTheme.errorRed,
         borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
       ),
       child: Text(
@@ -620,7 +553,10 @@ class _StatusBadge extends StatelessWidget {
   }
 }
 
+// ---------------------------------------------------------------------------
 // Data Models
+// ---------------------------------------------------------------------------
+
 class QuickAction {
   final IconData icon;
   final String label;
@@ -652,4 +588,3 @@ class PlantHistory {
     required this.isHealthy,
   });
 }
-

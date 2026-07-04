@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // Modern Earthy Green Color Palette (update_design.md)
@@ -20,7 +21,8 @@ class AppTheme {
 
 
   // Modern Typography (Bold sans-serif for headers, clean for body)
-  static const String fontFamily = 'Inter'; // You can use system default or add custom font
+  static String? fontFamily = GoogleFonts.poppins().fontFamily;
+
   
   static const TextStyle displayLarge = TextStyle(
     fontSize: 32,
@@ -136,6 +138,7 @@ class AppTheme {
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
+      fontFamily: fontFamily,
       
       // Color Scheme
       colorScheme: ColorScheme.light(

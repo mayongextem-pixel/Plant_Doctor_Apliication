@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 import '../config/app_theme.dart';
+import '../services/history_service.dart';
 
 /// Modern Diagnosis Result Screen following update_design.md
 /// Features: SliverAppBar with full-screen image, Bottom sheet info, Care guides
@@ -386,7 +388,26 @@ class _DiagnosisResultScreenState extends State<DiagnosisResultScreen> {
     );
   }
 
-  void _showSaveConfirmation() {
+  void _showSaveConfirmation() async {
+    if (!_isSaved) {
+      final history = ScanHistory(
+        id: const Uuid().v4(),
+        imagePath: widget.imagePath,
+        diseaseName: _mockResult.diseaseName,
+        accuracy: _mockResult.accuracy,
+        date: DateTime.now(),
+      );
+      await HistoryService.saveScanResult(history);
+      
+      if (mounted) {
+        setState(() {
+          _isSaved = true;
+        });
+      }
+    }
+
+    if (!mounted) return;
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -407,7 +428,7 @@ class _DiagnosisResultScreenState extends State<DiagnosisResultScreen> {
         ),
         title: const Text('Diagnosis Tersimpan'),
         content: const Text(
-          'Hasil diagnosis telah disimpan ke koleksi Anda.',
+          'Hasil diagnosis telah disimpan ke riwayat Anda.',
           textAlign: TextAlign.center,
         ),
         actions: [

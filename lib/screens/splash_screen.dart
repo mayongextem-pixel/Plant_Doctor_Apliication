@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../config/app_theme.dart';
 import '../utils/page_transitions.dart';
-import 'dashboard_screen.dart';
+import 'auth/welcome_screen.dart';
+import 'main_nav/main_screen.dart';
 
 /// Modern Splash Screen with organic geometric shapes
 /// Following update_design.md specifications
@@ -42,6 +44,25 @@ class _SplashScreenState extends State<SplashScreen>
     );
 
     _controller.forward();
+    _checkLoginStatus();
+  }
+
+  Future<void> _checkLoginStatus() async {
+    await Future.delayed(const Duration(seconds: 2));
+    final prefs = await SharedPreferences.getInstance();
+    final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+
+    if (!mounted) return;
+    
+    if (isLoggedIn) {
+      Navigator.of(context).pushReplacement(
+        PageTransitions.fadeTransition(const MainScreen()),
+      );
+    } else {
+      Navigator.of(context).pushReplacement(
+        PageTransitions.fadeTransition(const WelcomeScreen()),
+      );
+    }
   }
 
   @override
@@ -159,49 +180,7 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
               ),
 
-              // Get Started Button (Capsule shaped)
-              FadeTransition(
-                opacity: _fadeAnimation,
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pushReplacement(
-                        PageTransitions.fadeTransition(
-                          const DashboardScreen(),
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryGreen,
-                      foregroundColor: AppTheme.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(28), // Capsule
-                      ),
-                      elevation: AppTheme.elevationMedium,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
-                          'Get Started',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                        const SizedBox(width: AppTheme.spacingS),
-                        Icon(
-                          Icons.arrow_forward_rounded,
-                          size: 24,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+
             ],
           ),
         ),

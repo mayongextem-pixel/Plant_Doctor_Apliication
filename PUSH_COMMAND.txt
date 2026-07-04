@@ -1,4 +1,0 @@
-#!/bin/bash
-# Copy dan paste command ini ke Terminal
-
-cd "/Users/nantamac/flutter/UAS Pemob/Plant_Doctor_Apliication" && git push origin main

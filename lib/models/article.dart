@@ -174,6 +174,55 @@ class Article {
     );
   }
 
+  /// Static mock data — 5 articles covering different categories
+  static List<Article> get mockData => [
+    Article(
+      id: '1',
+      title: 'Tips Merawat Tanaman Indoor',
+      description: 'Panduan lengkap merawat tanaman hias di dalam ruangan agar tumbuh subur dan sehat.',
+      category: 'care',
+      publishedDate: DateTime.now().subtract(const Duration(days: 1)),
+      author: 'Plant Doctor Team',
+      tags: ['indoor', 'perawatan'],
+    ),
+    Article(
+      id: '2',
+      title: 'Mengenal Penyakit Bercak Daun',
+      description: 'Bercak daun adalah salah satu penyakit umum pada tanaman. Pelajari cara mendeteksi dan mengatasinya.',
+      category: 'disease',
+      publishedDate: DateTime.now().subtract(const Duration(days: 3)),
+      author: 'Plant Doctor Team',
+      tags: ['penyakit', 'bercak daun'],
+    ),
+    Article(
+      id: '3',
+      title: 'Panduan Penyiraman yang Tepat',
+      description: 'Frekuensi dan cara penyiraman yang benar sangat mempengaruhi kesehatan tanaman Anda.',
+      category: 'watering',
+      publishedDate: DateTime.now().subtract(const Duration(days: 5)),
+      author: 'Plant Doctor Team',
+      tags: ['penyiraman', 'perawatan'],
+    ),
+    Article(
+      id: '4',
+      title: 'Pemupukan Organik untuk Tanaman Hias',
+      description: 'Gunakan pupuk organik untuk menjaga kesuburan tanah dan pertumbuhan tanaman secara alami.',
+      category: 'fertilizing',
+      publishedDate: DateTime.now().subtract(const Duration(days: 8)),
+      author: 'Plant Doctor Team',
+      tags: ['pemupukan', 'organik'],
+    ),
+    Article(
+      id: '5',
+      title: 'Cara Mengatasi Hama Tanaman',
+      description: 'Hama seperti kutu daun dan tungau bisa merusak tanaman. Temukan solusi alami untuk mengatasinya.',
+      category: 'pest',
+      publishedDate: DateTime.now().subtract(const Duration(days: 12)),
+      author: 'Plant Doctor Team',
+      tags: ['hama', 'perawatan'],
+    ),
+  ];
+
   @override
   String toString() {
     return 'Article(id: $id, title: $title, category: $category)';
