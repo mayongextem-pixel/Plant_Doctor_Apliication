@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import '../config/app_theme.dart';
 import '../services/history_service.dart';
+import '../services/api_service.dart';
+import '../models/plant_diagnosis.dart';
+import '../utils/logger.dart';
 
 /// Modern Diagnosis Result Screen following update_design.md
 /// Features: SliverAppBar with full-screen image, Bottom sheet info, Care guides
@@ -20,48 +23,75 @@ class DiagnosisResultScreen extends StatefulWidget {
 
 class _DiagnosisResultScreenState extends State<DiagnosisResultScreen> {
   bool _isSaved = false;
+  bool _isLoading = true;
+  String? _errorMessage;
+  PlantDiagnosis? _diagnosis;
   
-  // Mock diagnosis data (will be replaced with API response)
-  final DiagnosisResult _mockResult = DiagnosisResult(
-    diseaseName: 'Bercak Daun Coklat',
-    scientificName: 'Phyllosticta leaf spot',
-    accuracy: 0.87,
-    severity: 'Sedang',
-    description: 'Penyakit jamur yang menyebabkan bercak coklat pada daun. Biasanya disebabkan oleh kelembaban tinggi dan sirkulasi udara yang buruk.',
-    careInstructions: [
-      'Buang daun yang terinfeksi segera',
-      'Kurangi penyiraman dan hindari membasahi daun',
-      'Tingkatkan sirkulasi udara di sekitar tanaman',
-      'Aplikasikan fungisida organik jika diperlukan',
-      'Karantina tanaman dari tanaman sehat lainnya',
-    ],
-    careGuides: [
-      CareGuide(
-        icon: Icons.water_drop_rounded,
-        label: 'Air',
-        value: 'Sedang',
-        description: 'Siram 2-3x seminggu',
-      ),
-      CareGuide(
-        icon: Icons.wb_sunny_rounded,
-        label: 'Cahaya',
-        value: 'Penuh',
-        description: 'Sinar tidak langsung',
-      ),
-      CareGuide(
-        icon: Icons.warning_amber_rounded,
-        label: 'Karantina',
-        value: 'Ya',
-        description: 'Pisahkan 2 minggu',
-      ),
-      CareGuide(
-        icon: Icons.science_rounded,
-        label: 'Treatment',
-        value: 'Fungisida',
-        description: 'Seminggu sekali',
-      ),
-    ],
-  );
+  @override
+  void initState() {
+    super.initState();
+    _fetchDiagnosis();
+  }
+
+  Future<void> _fetchDiagnosis() async {
+    try {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+
+      final result = await ApiService.instance.diagnosePlant(widget.imagePath);
+
+      if (mounted) {
+        setState(() {
+          _diagnosis = result;
+          _isLoading = false;
+        });
+        
+        // Auto-save the result
+        _autoSaveDiagnosis(result);
+      }
+    } catch (e) {
+      Logger.error('Diagnosis failed', tag: 'DiagnosisResult', error: e);
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = e.toString().replaceAll('Exception: ', '');
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(_errorMessage ?? 'Terjadi kesalahan'),
+            backgroundColor: AppTheme.errorRed,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _autoSaveDiagnosis(PlantDiagnosis diagnosis) async {
+    if (_isSaved) return;
+    
+    try {
+      final history = ScanHistory(
+        id: diagnosis.id,
+        imagePath: diagnosis.imagePath,
+        diseaseName: diagnosis.diseaseName,
+        accuracy: diagnosis.accuracy,
+        date: diagnosis.diagnosisDate,
+        description: diagnosis.description,
+        treatments: diagnosis.treatments,
+      );
+      
+      await HistoryService.saveScanResult(history);
+      if (mounted) {
+        setState(() {
+          _isSaved = true;
+        });
+      }
+    } catch (e) {
+      Logger.error('Failed to auto-save diagnosis', tag: 'DiagnosisResult', error: e);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,21 +101,64 @@ class _DiagnosisResultScreenState extends State<DiagnosisResultScreen> {
           // SliverAppBar with full-screen image
           _buildSliverAppBar(),
 
-          // Diagnosis Info Bottom Sheet
-          _buildDiagnosisInfo(),
+          if (_isLoading)
+            const SliverFillRemaining(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(color: AppTheme.primaryGreen),
+                    SizedBox(height: 16),
+                    Text('Menganalisis tanaman...', style: AppTheme.titleMedium),
+                  ],
+                ),
+              ),
+            )
+          else if (_errorMessage != null)
+            SliverFillRemaining(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(AppTheme.spacingL),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.error_outline, color: AppTheme.errorRed, size: 64),
+                      const SizedBox(height: 16),
+                      const Text('Gagal Menganalisis', style: AppTheme.titleMedium),
+                      const SizedBox(height: 8),
+                      Text(
+                        _errorMessage!,
+                        style: AppTheme.bodyMedium,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton.icon(
+                        onPressed: _fetchDiagnosis,
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Coba Lagi'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            )
+          else ...[
+            // Diagnosis Info Bottom Sheet
+            _buildDiagnosisInfo(),
 
-          // Care Instructions Section
-          _buildCareInstructions(),
+            // Care Instructions Section
+            _buildCareInstructions(),
 
-          // Bottom padding
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 100),
-          ),
+            // Bottom padding
+            const SliverToBoxAdapter(
+              child: SizedBox(height: 100),
+            ),
+          ],
         ],
       ),
 
       // Action Button
-      bottomNavigationBar: _buildBottomActionBar(),
+      bottomNavigationBar: (!_isLoading && _errorMessage == null) ? _buildBottomActionBar() : null,
     );
   }
 
@@ -175,7 +248,6 @@ class _DiagnosisResultScreenState extends State<DiagnosisResultScreen> {
     );
   }
 
-  /// Diagnosis Information Bottom Sheet Style
   Widget _buildDiagnosisInfo() {
     return SliverToBoxAdapter(
       child: Container(
@@ -206,12 +278,12 @@ class _DiagnosisResultScreenState extends State<DiagnosisResultScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _mockResult.diseaseName,
+                        _diagnosis!.diseaseName,
                         style: AppTheme.displayMedium.copyWith(fontSize: 26),
                       ),
                       const SizedBox(height: AppTheme.spacingXS),
                       Text(
-                        _mockResult.scientificName,
+                        _diagnosis!.commonName,
                         style: AppTheme.bodyMedium.copyWith(
                           fontStyle: FontStyle.italic,
                           color: AppTheme.textLight,
@@ -220,32 +292,32 @@ class _DiagnosisResultScreenState extends State<DiagnosisResultScreen> {
                     ],
                   ),
                 ),
-                _AccuracyBadge(accuracy: _mockResult.accuracy),
+                _AccuracyBadge(accuracy: _diagnosis!.accuracy),
               ],
             ),
 
             const SizedBox(height: AppTheme.spacingM),
 
             // Severity Badge
-            _SeverityBadge(severity: _mockResult.severity),
+            _SeverityBadge(severity: _diagnosis!.severity),
 
             const SizedBox(height: AppTheme.spacingL),
 
             // Description
-            Text(
+            const Text(
               'Deskripsi',
               style: AppTheme.titleMedium,
             ),
             const SizedBox(height: AppTheme.spacingS),
             Text(
-              _mockResult.description,
+              _diagnosis!.description,
               style: AppTheme.bodyMedium.copyWith(height: 1.6),
             ),
 
             const SizedBox(height: AppTheme.spacingL),
 
             // Care Guides Icons
-            Text(
+            const Text(
               'Panduan Perawatan',
               style: AppTheme.titleMedium,
             ),
@@ -259,15 +331,34 @@ class _DiagnosisResultScreenState extends State<DiagnosisResultScreen> {
 
   /// Care Guides Icon Row
   Widget _buildCareGuidesRow() {
+    final guides = [
+      CareGuide(
+        icon: Icons.water_drop_rounded,
+        label: 'Air',
+        value: 'Sesuai',
+        description: 'Jaga kelembaban',
+      ),
+      CareGuide(
+        icon: Icons.wb_sunny_rounded,
+        label: 'Cahaya',
+        value: 'Optimal',
+        description: 'Cahaya cukup',
+      ),
+      CareGuide(
+        icon: Icons.science_rounded,
+        label: 'Tindakan',
+        value: 'Segera',
+        description: 'Lihat panduan',
+      ),
+    ];
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: _mockResult.careGuides.map((guide) {
+      children: guides.map((guide) {
         return _CareGuideItem(guide: guide);
       }).toList(),
     );
   }
 
-  /// Care Instructions List
   Widget _buildCareInstructions() {
     return SliverToBoxAdapter(
       child: Container(
@@ -299,7 +390,7 @@ class _DiagnosisResultScreenState extends State<DiagnosisResultScreen> {
               ],
             ),
             const SizedBox(height: AppTheme.spacingM),
-            ..._mockResult.careInstructions.asMap().entries.map((entry) {
+            ..._diagnosis!.treatments.asMap().entries.map((entry) {
               return Padding(
                 padding: const EdgeInsets.only(bottom: AppTheme.spacingM),
                 child: Row(
@@ -308,7 +399,7 @@ class _DiagnosisResultScreenState extends State<DiagnosisResultScreen> {
                     Container(
                       width: 28,
                       height: 28,
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: AppTheme.lightGreen,
                         shape: BoxShape.circle,
                       ),
@@ -340,7 +431,6 @@ class _DiagnosisResultScreenState extends State<DiagnosisResultScreen> {
     );
   }
 
-  /// Bottom Action Bar
   Widget _buildBottomActionBar() {
     return Container(
       padding: const EdgeInsets.all(AppTheme.spacingM),
@@ -360,22 +450,23 @@ class _DiagnosisResultScreenState extends State<DiagnosisResultScreen> {
           height: 56,
           child: ElevatedButton(
             onPressed: () {
-              _showSaveConfirmation();
+              Navigator.of(context).pop();
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryGreen,
+              backgroundColor: _isSaved ? AppTheme.surfaceColor : AppTheme.primaryGreen,
+              foregroundColor: _isSaved ? AppTheme.primaryGreen : AppTheme.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
               ),
             ),
-            child: const Row(
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.save_rounded, size: 24),
-                SizedBox(width: AppTheme.spacingS),
+                Icon(_isSaved ? Icons.check_circle_rounded : Icons.save_rounded, size: 24),
+                const SizedBox(width: AppTheme.spacingS),
                 Text(
-                  'Simpan Diagnosis',
-                  style: TextStyle(
+                  _isSaved ? 'Tersimpan di Riwayat' : 'Simpan Diagnosis',
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -384,62 +475,6 @@ class _DiagnosisResultScreenState extends State<DiagnosisResultScreen> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  void _showSaveConfirmation() async {
-    if (!_isSaved) {
-      final history = ScanHistory(
-        id: const Uuid().v4(),
-        imagePath: widget.imagePath,
-        diseaseName: _mockResult.diseaseName,
-        accuracy: _mockResult.accuracy,
-        date: DateTime.now(),
-      );
-      await HistoryService.saveScanResult(history);
-      
-      if (mounted) {
-        setState(() {
-          _isSaved = true;
-        });
-      }
-    }
-
-    if (!mounted) return;
-    
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-        ),
-        icon: Container(
-          padding: const EdgeInsets.all(AppTheme.spacingM),
-          decoration: BoxDecoration(
-            color: AppTheme.successGreen.withValues(alpha: 0.1),
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(
-            Icons.check_circle_rounded,
-            color: AppTheme.successGreen,
-            size: 48,
-          ),
-        ),
-        title: const Text('Diagnosis Tersimpan'),
-        content: const Text(
-          'Hasil diagnosis telah disimpan ke riwayat Anda.',
-          textAlign: TextAlign.center,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pop(); // Return to dashboard
-            },
-            child: const Text('OK'),
-          ),
-        ],
       ),
     );
   }
@@ -601,26 +636,6 @@ class _CareGuideItem extends StatelessWidget {
 }
 
 // Data Models
-class DiagnosisResult {
-  final String diseaseName;
-  final String scientificName;
-  final double accuracy;
-  final String severity;
-  final String description;
-  final List<String> careInstructions;
-  final List<CareGuide> careGuides;
-
-  DiagnosisResult({
-    required this.diseaseName,
-    required this.scientificName,
-    required this.accuracy,
-    required this.severity,
-    required this.description,
-    required this.careInstructions,
-    required this.careGuides,
-  });
-}
-
 class CareGuide {
   final IconData icon;
   final String label;

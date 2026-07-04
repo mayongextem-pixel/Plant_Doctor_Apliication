@@ -45,15 +45,11 @@ class ApiService {
         throw Exception('Image file not found: $imagePath');
       }
 
-      // Read image bytes and convert to base64
-      final imageBytes = await imageFile.readAsBytes();
-      final base64Image = base64Encode(imageBytes);
-
       // Generate unique diagnosis ID
       final diagnosisId = const Uuid().v4();
 
-      // Call API
-      final response = await _callHealthAssessmentApi(base64Image);
+      // Call API (using MultipartFile via image path)
+      final response = await _callHealthAssessmentApi(imagePath);
 
       // Parse response
       final diagnosis = PlantDiagnosis.fromApiResponse(
@@ -74,39 +70,42 @@ class ApiService {
     }
   }
 
-  /// Call Plant.id Health Assessment API
-  Future<Map<String, dynamic>> _callHealthAssessmentApi(String base64Image) async {
+  /// Call Plant.id Health Assessment API using HTTP POST Multipart
+  Future<Map<String, dynamic>> _callHealthAssessmentApi(String imagePath) async {
     try {
       // Check if API key is configured
       if (_apiKey == 'YOUR_API_KEY_HERE' || _apiKey.isEmpty) {
+        // Mock delay for loading indicator
+        await Future.delayed(const Duration(seconds: 2));
         Logger.warning('API key not configured, using mock data', tag: 'ApiService');
         return _getMockResponse();
       }
 
       final url = Uri.parse('$_baseUrl/health_assessment');
       
-      final requestBody = {
-        'images': [base64Image],
-        'latitude': -6.2088, // Default Jakarta coordinates
-        'longitude': 106.8456,
-        'similar_images': true,
-      };
+      Logger.info('Calling API via POST (Multipart): $url', tag: 'ApiService');
 
-      Logger.info('Calling Plant.id API: $url', tag: 'ApiService');
+      var request = http.MultipartRequest('POST', url);
+      request.headers.addAll({
+        'Api-Key': _apiKey,
+      });
 
-      final response = await _client.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Api-Key': _apiKey,
-        },
-        body: jsonEncode(requestBody),
-      ).timeout(
+      // Add image file as MultipartFile
+      request.files.add(await http.MultipartFile.fromPath('images', imagePath));
+
+      // Add other form data
+      request.fields['latitude'] = '-6.2088';
+      request.fields['longitude'] = '106.8456';
+      request.fields['similar_images'] = 'true';
+
+      final streamedResponse = await _client.send(request).timeout(
         const Duration(seconds: 30),
         onTimeout: () {
           throw TimeoutException('API request timed out after 30 seconds');
         },
       );
+      
+      final response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final jsonResponse = jsonDecode(response.body) as Map<String, dynamic>;

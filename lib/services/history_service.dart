@@ -7,6 +7,8 @@ class ScanHistory {
   final String diseaseName;
   final double accuracy;
   final DateTime date;
+  final String? description;
+  final List<String>? treatments;
 
   ScanHistory({
     required this.id,
@@ -14,6 +16,8 @@ class ScanHistory {
     required this.diseaseName,
     required this.accuracy,
     required this.date,
+    this.description,
+    this.treatments,
   });
 
   Map<String, dynamic> toJson() => {
@@ -22,6 +26,8 @@ class ScanHistory {
         'diseaseName': diseaseName,
         'accuracy': accuracy,
         'date': date.toIso8601String(),
+        'description': description,
+        'treatments': treatments,
       };
 
   factory ScanHistory.fromJson(Map<String, dynamic> json) => ScanHistory(
@@ -30,6 +36,8 @@ class ScanHistory {
         diseaseName: json['diseaseName'],
         accuracy: json['accuracy'],
         date: DateTime.parse(json['date']),
+        description: json['description'],
+        treatments: (json['treatments'] as List<dynamic>?)?.map((e) => e.toString()).toList(),
       );
 }
 
