@@ -269,7 +269,7 @@ class _DiagnosisResultScreenState extends State<DiagnosisResultScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Disease Name & Accuracy
+            // Disease Name & Status
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -278,17 +278,19 @@ class _DiagnosisResultScreenState extends State<DiagnosisResultScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _diagnosis!.diseaseName,
+                        _diagnosis!.commonName,
                         style: AppTheme.displayMedium.copyWith(fontSize: 26),
                       ),
                       const SizedBox(height: AppTheme.spacingXS),
-                      Text(
-                        _diagnosis!.commonName,
-                        style: AppTheme.bodyMedium.copyWith(
-                          fontStyle: FontStyle.italic,
-                          color: AppTheme.textLight,
+                      // Tampilkan nama penyakit HANYA jika sakit
+                      if (_diagnosis!.severity == 'sakit')
+                        Text(
+                          'Terdeteksi: ${_diagnosis!.diseaseName}',
+                          style: AppTheme.bodyMedium.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.errorRed,
+                          ),
                         ),
-                      ),
                     ],
                   ),
                 ),
@@ -298,8 +300,7 @@ class _DiagnosisResultScreenState extends State<DiagnosisResultScreen> {
 
             const SizedBox(height: AppTheme.spacingM),
 
-
-            // Severity Badge (sekarang menampilkan tingkat kepercayaan)
+            // Status Badge (Sehat / Sakit)
             _SeverityBadge(severity: _diagnosis!.severity),
 
             const SizedBox(height: AppTheme.spacingL),
@@ -396,58 +397,47 @@ class _DiagnosisResultScreenState extends State<DiagnosisResultScreen> {
                 Container(
                   padding: const EdgeInsets.all(AppTheme.spacingS),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryGreen.withValues(alpha: 0.1),
+                    color: _diagnosis!.severity == 'sehat' 
+                        ? AppTheme.primaryGreen.withValues(alpha: 0.1)
+                        : AppTheme.errorRed.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                   ),
-                  child: const Icon(
-                    Icons.spa_rounded,
-                    color: AppTheme.primaryGreen,
+                  child: Icon(
+                    _diagnosis!.severity == 'sehat' ? Icons.eco_rounded : Icons.medical_services_rounded,
+                    color: _diagnosis!.severity == 'sehat' ? AppTheme.primaryGreen : AppTheme.errorRed,
                     size: 24,
                   ),
                 ),
                 const SizedBox(width: AppTheme.spacingM),
-                const Text(
-                  'Tips Perawatan Tanaman',
+                Text(
+                  _diagnosis!.severity == 'sehat' ? 'Saran Perawatan' : 'Rekomendasi Pengobatan',
                   style: AppTheme.titleMedium,
                 ),
               ],
             ),
             const SizedBox(height: AppTheme.spacingM),
-            ..._diagnosis!.treatments.asMap().entries.map((entry) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: AppTheme.spacingM),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 28,
-                      height: 28,
-                      decoration: const BoxDecoration(
-                        color: AppTheme.lightGreen,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: Text(
-                          '${entry.key + 1}',
-                          style: const TextStyle(
-                            color: AppTheme.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: AppTheme.spacingM),
-                    Expanded(
-                      child: Text(
-                        entry.value,
-                        style: AppTheme.bodyMedium.copyWith(height: 1.5),
-                      ),
-                    ),
-                  ],
+            
+            // Rekomendasi Text Card
+            Container(
+              padding: const EdgeInsets.all(AppTheme.spacingM),
+              decoration: BoxDecoration(
+                color: _diagnosis!.severity == 'sehat'
+                    ? AppTheme.lightGreen.withValues(alpha: 0.1)
+                    : AppTheme.warningYellow.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                border: Border.all(
+                  color: _diagnosis!.severity == 'sehat'
+                      ? AppTheme.lightGreen
+                      : AppTheme.warningYellow,
                 ),
-              );
-            }),
+              ),
+              child: Text(
+                _diagnosis!.treatments.isNotEmpty 
+                    ? _diagnosis!.treatments.first 
+                    : 'Tidak ada rekomendasi spesifik.',
+                style: AppTheme.bodyMedium.copyWith(height: 1.5, color: AppTheme.textDark),
+              ),
+            ),
           ],
         ),
       ),
@@ -590,28 +580,18 @@ class _SeverityBadge extends StatelessWidget {
   }
 
   Color _getSeverityColor(String severity) {
-    switch (severity.toLowerCase()) {
-      case 'ringan':
-        return AppTheme.successGreen;
-      case 'sedang':
-        return AppTheme.warningYellow;
-      case 'parah':
-        return AppTheme.errorRed;
-      default:
-        return AppTheme.textMedium;
+    if (severity.toLowerCase() == 'sehat') {
+      return AppTheme.successGreen;
+    } else {
+      return AppTheme.errorRed;
     }
   }
 
   IconData _getSeverityIcon(String severity) {
-    switch (severity.toLowerCase()) {
-      case 'ringan':
-        return Icons.check_circle_rounded;
-      case 'sedang':
-        return Icons.warning_rounded;
-      case 'parah':
-        return Icons.error_rounded;
-      default:
-        return Icons.info_rounded;
+    if (severity.toLowerCase() == 'sehat') {
+      return Icons.check_circle_rounded;
+    } else {
+      return Icons.warning_rounded;
     }
   }
 }

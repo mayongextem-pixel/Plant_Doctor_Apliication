@@ -7,8 +7,11 @@ class AppConstants {
   // Daftar di: https://my.plantnet.org → My Account → API Keys
   static const String apiBaseUrl = 'https://my-api.plantnet.org/v2';
   static const String apiKey = '2b10TPnWALxXCXCODC1knvmI';
-  static const String plantNetProject =
-      'all'; // bisa ganti ke 'the-plant-list' untuk akurasi lebih tinggi
+  static const String plantNetProject = 'all';
+
+  // Backend Laravel API Configuration
+  // Gunakan 'http://10.0.2.2:8000' untuk Android Emulator
+  static const String laravelApiBaseUrl = 'http://192.168.18.42:8000/api';
 
   // Storage Keys
   static const String keyPlantHistory = 'plant_history';

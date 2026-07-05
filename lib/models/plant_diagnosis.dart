@@ -170,9 +170,37 @@ class PlantDiagnosis {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // Factory: buat dari respons Pl@ntNet API v2
-  // Pl@ntNet mengidentifikasi SPESIES tanaman, bukan penyakit.
-  // Kita tampilkan nama spesies sebagai hasil identifikasi + saran perawatan umum.
+  // Factory: buat dari respons API Laravel (Format Baru)
+  // ─────────────────────────────────────────────────────────────────────────
+  factory PlantDiagnosis.fromLaravelApi(
+    Map<String, dynamic> data,
+    String imagePath,
+    String diagnosisId,
+  ) {
+    String health = data['health_status']?.toString().toLowerCase() ?? 'sakit';
+    bool isHealthy = health == 'sehat';
+    
+    // Konversi akurasi (jika dari API berupa 85.5 (persen) kita ubah ke 0.855 untuk UI kita)
+    double rawAcc = (data['accuracy'] as num?)?.toDouble() ?? 0.0;
+    double finalAcc = rawAcc > 1.0 ? rawAcc / 100 : rawAcc;
+
+    return PlantDiagnosis(
+      id: diagnosisId,
+      imagePath: imagePath,
+      diseaseName: isHealthy ? 'Tanaman Sehat' : (data['disease_name'] ?? 'Penyakit Tidak Diketahui'),
+      commonName: data['plant_name'] ?? 'Unknown Plant',
+      accuracy: finalAcc,
+      severity: isHealthy ? 'sehat' : 'sakit',
+      symptoms: [], // Tidak dipakai di UI baru
+      treatments: [data['recommendation'] ?? 'Tidak ada rekomendasi spesifik.'],
+      description: 'Hasil deteksi AI Plant Doctor.',
+      diagnosisDate: DateTime.now(),
+      isSaved: false,
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Factory: buat dari respons Pl@ntNet API v2 (Lama - Deprecated)
   // ─────────────────────────────────────────────────────────────────────────
   factory PlantDiagnosis.fromPlantNetResponse(
     Map<String, dynamic> apiData,

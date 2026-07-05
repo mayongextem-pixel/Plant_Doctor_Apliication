@@ -71,27 +71,24 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          if (!isFirstPage) ...[
-            Container(
-              width: 80,
-              height: 80,
+          // Gambar utama dari assets
+          Image.asset(
+            imagePath,
+            height: 270,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) => Container(
+              height: 270,
+              alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: AppTheme.primaryGreen.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
+                color: AppTheme.lightGreen.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(20),
               ),
               child: const Icon(
                 Icons.local_florist_rounded,
-                size: 40,
+                size: 100,
                 color: AppTheme.primaryGreen,
               ),
             ),
-            const SizedBox(height: AppTheme.spacingL),
-          ],
-          Image.asset(
-            imagePath,
-            height: 250,
-            fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) => const Icon(Icons.image_not_supported, size: 100),
           ),
           const SizedBox(height: AppTheme.spacingXL),
           Text(

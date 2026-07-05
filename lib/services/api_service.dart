@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import '../models/models.dart';
 import '../config/app_constants.dart';
@@ -36,49 +37,62 @@ class ApiService {
     _instance = instance;
   }
 
-  /// Identify plant species from image file using Pl@ntNet API
+  /// Identify plant species & disease using Laravel Backend API
   Future<PlantDiagnosis> diagnosePlant(String imagePath) async {
     try {
-      Logger.info('Starting plant identification for: $imagePath', tag: 'ApiService');
+      Logger.info('Starting plant diagnosis via Laravel for: $imagePath', tag: 'ApiService');
 
-      // Read image file
       final imageFile = File(imagePath);
       if (!await imageFile.exists()) {
         throw Exception('Image file not found: $imagePath');
       }
 
-      // Generate unique diagnosis ID
-      final diagnosisId = const Uuid().v4();
+      final url = Uri.parse('${AppConstants.laravelApiBaseUrl}/scan');
+      var request = http.MultipartRequest('POST', url);
 
-      // Call PlantNet API
-      final response = await _callPlantNetApi(imagePath);
-
-      // ── Validasi: pastikan ada hasil identifikasi ──
-      final results = response['results'] as List<dynamic>?;
-      
-      // Jika skor terlalu rendah, anggap tanaman tidak dikenali (hapus results)
-      if (results != null && results.isNotEmpty) {
-        final topScore = (results[0]['score'] as num?)?.toDouble() ?? 0.0;
-        if (topScore < 0.01) {
-          response['results'] = [];
-        }
+      // Ambil token jika ada
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('api_token');
+      if (token != null && token.isNotEmpty) {
+        request.headers['Authorization'] = 'Bearer $token';
       }
+      request.headers['Accept'] = 'application/json';
 
-      // Parse response ke model
-      final diagnosis = PlantDiagnosis.fromPlantNetResponse(
-        response,
-        imagePath,
-        diagnosisId,
+      // Tambah file gambar
+      request.files.add(await http.MultipartFile.fromPath('image', imagePath));
+
+      Logger.info('Sending POST to $url', tag: 'ApiService');
+      final streamedResponse = await _client.send(request).timeout(
+        const Duration(seconds: 45),
+        onTimeout: () {
+          throw TimeoutException('API request timed out (Laravel backend)');
+        },
       );
 
-      Logger.info(
-        'Identification completed: ${diagnosis.diseaseName} (${(diagnosis.accuracy * 100).toStringAsFixed(1)}%)',
-        tag: 'ApiService',
-      );
+      final response = await http.Response.fromStream(streamedResponse);
+      Logger.info('Laravel response status: ${response.statusCode}', tag: 'ApiService');
 
-      return diagnosis;
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final jsonResponse = jsonDecode(response.body);
+        
+        // Asumsi respons dari Laravel: { "status": "success", "data": { ... } }
+        final data = jsonResponse['data'] ?? jsonResponse;
+
+        final diagnosisId = const Uuid().v4();
+        final diagnosis = PlantDiagnosis.fromLaravelApi(data, imagePath, diagnosisId);
+
+        Logger.info('Diagnosis success: ${diagnosis.diseaseName}', tag: 'ApiService');
+        return diagnosis;
+      } else {
+        Logger.error('API Error: ${response.body}', tag: 'ApiService');
+        throw Exception('Gagal melakukan diagnosis (Status ${response.statusCode})');
+      }
+    } on SocketException {
+      throw Exception(AppConstants.errorNoInternet);
+    } on TimeoutException {
+      throw Exception('Koneksi timeout saat menghubungi server');
     } catch (e) {
-      Logger.error('Error identifying plant', tag: 'ApiService', error: e);
+      Logger.error('Error diagnosing plant', tag: 'ApiService', error: e);
       rethrow;
     }
   }
