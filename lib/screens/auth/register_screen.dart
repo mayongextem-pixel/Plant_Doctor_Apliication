@@ -5,6 +5,9 @@ import '../../utils/page_transitions.dart';
 import '../../utils/validators.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_text_field.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import '../../config/app_constants.dart';
 import '../main_nav/main_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -36,20 +39,61 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     setState(() => _isLoading = true);
 
-    // Mock registration delay
-    await Future.delayed(const Duration(milliseconds: 1500));
-    
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isLoggedIn', true);
+    try {
+      final response = await http.post(
+        Uri.parse('${AppConstants.laravelApiBaseUrl}/auth/register'),
+        headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'name': _nameController.text.trim(),
+          'email': _emailController.text.trim(),
+          'password': _passwordController.text,
+          'password_confirmation': _confirmPasswordController.text,
+        }),
+      );
 
-    if (!mounted) return;
+      final responseData = jsonDecode(response.body);
 
-    setState(() => _isLoading = false);
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        final token = responseData['data']['token'];
+        final role = responseData['data']['user']['role']['slug'];
+        final userId = responseData['data']['user']['id'].toString();
+        final userName = responseData['data']['user']['name'].toString();
 
-    Navigator.of(context).pushAndRemoveUntil(
-      PageTransitions.fadeTransition(const MainScreen()),
-      (route) => false,
-    );
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('isLoggedIn', true);
+        await prefs.setString('api_token', token);
+        await prefs.setString('user_role', role);
+        await prefs.setString('user_id', userId);
+        await prefs.setString('user_name', userName);
+
+        if (!mounted) return;
+        Navigator.of(context).pushAndRemoveUntil(
+          PageTransitions.fadeTransition(const MainScreen()),
+          (route) => false,
+        );
+      } else {
+        String msg = responseData['message'] ?? 'Gagal mendaftar.';
+        if (responseData['errors'] != null) {
+          final errors = responseData['errors'] as Map<String, dynamic>;
+          msg = errors.values.first[0];
+        }
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(msg), backgroundColor: AppTheme.errorRed),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Koneksi bermasalah: $e'), backgroundColor: AppTheme.errorRed),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override

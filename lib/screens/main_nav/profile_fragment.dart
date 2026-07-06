@@ -1,12 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../config/app_constants.dart';
 import '../../config/app_theme.dart';
+import '../../services/history_service.dart';
+import '../../services/storage_service.dart';
 import '../../utils/page_transitions.dart';
 import '../auth/welcome_screen.dart';
 
 /// Profile / Akun Fragment
-class ProfileFragment extends StatelessWidget {
+class ProfileFragment extends StatefulWidget {
   const ProfileFragment({super.key});
+
+  @override
+  State<ProfileFragment> createState() => _ProfileFragmentState();
+}
+
+class _ProfileFragmentState extends State<ProfileFragment> {
+  String _userName = 'Pengguna Plant Doctor';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserName();
+  }
+
+  Future<void> _loadUserName() async {
+    final prefs = await SharedPreferences.getInstance();
+    final name = prefs.getString('user_name') ?? '';
+    if (mounted && name.isNotEmpty) {
+      setState(() => _userName = name);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,8 +80,8 @@ class ProfileFragment extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppTheme.spacingM),
-            const Center(
-              child: Text('Pengguna Plant Doctor', style: AppTheme.titleMedium),
+            Center(
+              child: Text(_userName, style: AppTheme.titleMedium),
             ),
             const SizedBox(height: AppTheme.spacingXL),
 
@@ -107,8 +132,37 @@ class ProfileFragment extends StatelessWidget {
             OutlinedButton.icon(
               onPressed: () async {
                 final prefs = await SharedPreferences.getInstance();
+                final token = prefs.getString('api_token');
+
+                // 1. Panggil backend logout agar token server ikut dihapus
+                if (token != null && token.isNotEmpty) {
+                  try {
+                    await http.post(
+                      Uri.parse('${AppConstants.laravelApiBaseUrl}/auth/logout'),
+                      headers: {
+                        'Authorization': 'Bearer $token',
+                        'Accept': 'application/json',
+                      },
+                    ).timeout(const Duration(seconds: 5));
+                  } catch (_) {
+                    // Abaikan jika server tidak bisa dijangkau; logout tetap lanjut
+                  }
+                }
+
+                // 2. Hapus riwayat scan milik user ini (sebelum user_id dihapus)
+                await HistoryService.clearHistory();
+
+                // 3. Reset StorageService singleton agar tidak cached untuk user berikutnya
+                StorageService.resetInstance();
+
+                // 4. Hapus semua session key — jangan gunakan prefs.clear()
+                //    agar data user LAIN yang tersimpan dengan key berbeda tetap aman.
                 await prefs.remove('isLoggedIn');
-                
+                await prefs.remove('api_token');
+                await prefs.remove('user_role');
+                await prefs.remove('user_id');
+                await prefs.remove('user_name');
+
                 if (!context.mounted) return;
                 Navigator.of(context).pushAndRemoveUntil(
                   PageTransitions.fadeTransition(const WelcomeScreen()),

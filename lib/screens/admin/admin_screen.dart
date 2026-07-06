@@ -6,6 +6,7 @@ import '../../config/app_constants.dart';
 import '../../config/app_theme.dart';
 import '../../utils/page_transitions.dart';
 import '../auth/welcome_screen.dart';
+import 'admin_user_riwayat_screen.dart';
 
 /// Admin Dashboard — Full CRUD untuk Koleksi & Artikel
 class AdminScreen extends StatefulWidget {
@@ -25,7 +26,7 @@ class _AdminScreenState extends State<AdminScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _loadUserData();
   }
 
@@ -333,6 +334,17 @@ class _AdminScreenState extends State<AdminScreen>
                         ],
                       ),
                     ),
+                    Tab(
+                      height: 50,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.people_rounded, size: 18),
+                          SizedBox(width: 6),
+                          Text('Pengguna'),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -344,6 +356,7 @@ class _AdminScreenState extends State<AdminScreen>
           children: [
             _AdminKoleksiTab(token: _token),
             _AdminArtikelTab(token: _token),
+            _AdminPenggunaTab(token: _token),
           ],
         ),
       ),
@@ -591,7 +604,7 @@ class _AdminKoleksiTabState extends State<_AdminKoleksiTab> {
                       labelText: 'Nama Tanaman', border: OutlineInputBorder())),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                value: healthStatus,
+                initialValue: healthStatus,
                 decoration: const InputDecoration(
                     labelText: 'Status Kesehatan', border: OutlineInputBorder()),
                 items: const [
@@ -1017,6 +1030,127 @@ class _AdminArtikelTabState extends State<_AdminArtikelTab> {
                               ),
                             ],
                           ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+    );
+  }
+}
+
+// ===========================================================================
+// TAB 3: Manajemen Pengguna
+// ===========================================================================
+class _AdminPenggunaTab extends StatefulWidget {
+  final String token;
+  const _AdminPenggunaTab({required this.token});
+
+  @override
+  State<_AdminPenggunaTab> createState() => _AdminPenggunaTabState();
+}
+
+class _AdminPenggunaTabState extends State<_AdminPenggunaTab> {
+  List<dynamic> _usersList = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUsers();
+  }
+
+  Future<void> _fetchUsers() async {
+    setState(() => _isLoading = true);
+    try {
+      final response = await http.get(
+        Uri.parse('${AppConstants.laravelApiBaseUrl}/admin/users'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ${widget.token}',
+        },
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (mounted) {
+          setState(() {
+            _usersList = data['data']['data'] ?? [];
+          });
+        }
+      }
+    } catch (_) {}
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppTheme.backgroundColor,
+      body: _isLoading
+          ? const _SkeletonLoading()
+          : _usersList.isEmpty
+              ? Center(
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                      Icon(Icons.people_outline_rounded,
+                          size: 72,
+                          color: AppTheme.textLight.withValues(alpha: 0.4)),
+                      const SizedBox(height: 16),
+                      Text('Belum ada data pengguna',
+                          style: AppTheme.bodyLarge
+                              .copyWith(color: AppTheme.textLight)),
+                    ]))
+              : RefreshIndicator(
+                  onRefresh: _fetchUsers,
+                  color: AppTheme.primaryGreen,
+                  child: ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+                    itemCount: _usersList.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 10),
+                    itemBuilder: (context, i) {
+                      final user = _usersList[i] as Map<String, dynamic>;
+                      return Container(
+                        decoration: AppTheme.cardDecoration,
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: AppTheme.primaryGreen.withValues(alpha: 0.15),
+                            child: const Icon(Icons.person_rounded,
+                                color: AppTheme.primaryGreen),
+                          ),
+                          title: Text(user['name'] ?? '-',
+                              style: AppTheme.titleSmall),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 4),
+                              Text(user['email'] ?? '-',
+                                  style: AppTheme.bodySmall),
+                              const SizedBox(height: 4),
+                              Text('Terdaftar: ${user['created_at'] != null ? user['created_at'].toString().split('T')[0] : '-'}',
+                                  style: AppTheme.bodySmall.copyWith(fontSize: 11)),
+                            ],
+                          ),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.chevron_right_rounded,
+                                color: AppTheme.primaryGreen),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                PageTransitions.slideAndFadeTransition(
+                                  AdminUserRiwayatScreen(
+                                    userId: user['id'].toString(),
+                                    userName: user['name'],
+                                    token: widget.token,
+                                  ),
+                                ),
+                              );
+                            },
+                            tooltip: 'Lihat Riwayat',
+                          ),
+                          isThreeLine: true,
                         ),
                       );
                     },

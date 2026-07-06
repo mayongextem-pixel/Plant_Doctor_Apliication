@@ -19,11 +19,24 @@ class StorageService {
     return _instance!;
   }
 
+  /// Reset singleton instance saat logout agar user berikutnya tidak mendapat
+  /// instance yang masih di-cache dengan user_id lama.
+  static void resetInstance() {
+    _instance = null;
+    _prefs = null;
+  }
+
+  /// Menghasilkan key unik per user agar data tidak bocor antar-akun
+  String _userKey(String baseKey) {
+    final userId = _prefs!.getString('user_id') ?? 'guest';
+    return '${baseKey}_$userId';
+  }
+
   Future<bool> savePlantCollection(List<Plant> plants) async {
     try {
       final jsonList = plants.map((plant) => plant.toJson()).toList();
       final jsonString = jsonEncode(jsonList);
-      return await _prefs!.setString(AppConstants.keyPlantHistory, jsonString);
+      return await _prefs!.setString(_userKey(AppConstants.keyPlantHistory), jsonString);
     } catch (e) {
       Logger.error('Error saving plant collection', tag: 'StorageService', error: e);
       return false;
@@ -32,7 +45,7 @@ class StorageService {
 
   Future<List<Plant>> loadPlantCollection() async {
     try {
-      final jsonString = _prefs!.getString(AppConstants.keyPlantHistory);
+      final jsonString = _prefs!.getString(_userKey(AppConstants.keyPlantHistory));
       if (jsonString == null || jsonString.isEmpty) {
         return [];
       }
@@ -109,7 +122,7 @@ class StorageService {
 
   Future<bool> clearPlantCollection() async {
     try {
-      return await _prefs!.remove(AppConstants.keyPlantHistory);
+      return await _prefs!.remove(_userKey(AppConstants.keyPlantHistory));
     } catch (e) {
       Logger.error('Error clearing plant collection', tag: 'StorageService', error: e);
       return false;
@@ -157,7 +170,7 @@ class StorageService {
   Future<bool> saveSettings(Map<String, dynamic> settings) async {
     try {
       final jsonString = jsonEncode(settings);
-      return await _prefs!.setString(AppConstants.keyUserSettings, jsonString);
+      return await _prefs!.setString(_userKey(AppConstants.keyUserSettings), jsonString);
     } catch (e) {
       Logger.error('Error saving settings', tag: 'StorageService', error: e);
       return false;
@@ -166,7 +179,7 @@ class StorageService {
 
   Future<Map<String, dynamic>> loadSettings() async {
     try {
-      final jsonString = _prefs!.getString(AppConstants.keyUserSettings);
+      final jsonString = _prefs!.getString(_userKey(AppConstants.keyUserSettings));
       if (jsonString == null || jsonString.isEmpty) {
         return {};
       }
@@ -210,12 +223,15 @@ class StorageService {
     return plants.where((p) => p.currentHealthStatus != 'healthy').length;
   }
 
-  Future<bool> clearAllData() async {
+  /// Hapus hanya data milik user yang sedang login (user_id scoped).
+  /// Dipanggil saat logout agar data user lain tidak ikut terhapus.
+  Future<bool> clearCurrentUserData() async {
     try {
-      await _prefs!.clear();
+      await _prefs!.remove(_userKey(AppConstants.keyPlantHistory));
+      await _prefs!.remove(_userKey(AppConstants.keyUserSettings));
       return true;
     } catch (e) {
-      Logger.error('Error clearing all data', tag: 'StorageService', error: e);
+      Logger.error('Error clearing user data', tag: 'StorageService', error: e);
       return false;
     }
   }

@@ -85,7 +85,16 @@ class ApiService {
         return diagnosis;
       } else {
         Logger.error('API Error: ${response.body}', tag: 'ApiService');
-        throw Exception('Gagal melakukan diagnosis (Status ${response.statusCode})');
+        String errorMessage = 'Gagal melakukan diagnosis (Status ${response.statusCode})';
+        try {
+          final errorBody = jsonDecode(response.body);
+          if (errorBody['message'] != null) {
+            errorMessage = errorBody['message'];
+          }
+        } catch (e) {
+          // Ignored if response is not json
+        }
+        throw Exception(errorMessage);
       }
     } on SocketException {
       throw Exception(AppConstants.errorNoInternet);

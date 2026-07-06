@@ -56,9 +56,14 @@ class _LoginScreenState extends State<LoginScreen> {
         final role = responseData['data']['user']['role']['slug'];
 
         final prefs = await SharedPreferences.getInstance();
+        // Simpan user_id agar data lokal bisa di-scope per akun (mencegah data leak)
+        final userId = responseData['data']['user']['id']?.toString() ?? '';
+        final userName = responseData['data']['user']['name']?.toString() ?? '';
         await prefs.setBool('isLoggedIn', true);
         await prefs.setString('api_token', token);
         await prefs.setString('user_role', role);
+        await prefs.setString('user_id', userId);
+        await prefs.setString('user_name', userName);
 
         if (!mounted) return;
         Navigator.of(context).pushAndRemoveUntil(

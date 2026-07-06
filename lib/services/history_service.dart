@@ -42,28 +42,39 @@ class ScanHistory {
 }
 
 class HistoryService {
-  static const String _key = 'scan_history';
+  static const String _baseKey = 'scan_history';
+
+  /// Menghasilkan key unik per user agar data tidak bocor antar-akun
+  static Future<String> _getKey() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getString('user_id') ?? 'guest';
+    return '${_baseKey}_$userId';
+  }
 
   static Future<void> saveScanResult(ScanHistory history) async {
     final prefs = await SharedPreferences.getInstance();
-    final List<String> savedList = prefs.getStringList(_key) ?? [];
-    
+    final key = await _getKey();
+    final List<String> savedList = prefs.getStringList(key) ?? [];
+
     savedList.insert(0, jsonEncode(history.toJson()));
-    
-    await prefs.setStringList(_key, savedList);
+
+    await prefs.setStringList(key, savedList);
   }
 
   static Future<List<ScanHistory>> getHistory() async {
     final prefs = await SharedPreferences.getInstance();
-    final List<String> savedList = prefs.getStringList(_key) ?? [];
-    
+    final key = await _getKey();
+    final List<String> savedList = prefs.getStringList(key) ?? [];
+
     return savedList
         .map((item) => ScanHistory.fromJson(jsonDecode(item)))
         .toList();
   }
 
+  /// Hapus riwayat milik user tertentu (dipanggil saat logout)
   static Future<void> clearHistory() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_key);
+    final key = await _getKey();
+    await prefs.remove(key);
   }
 }
