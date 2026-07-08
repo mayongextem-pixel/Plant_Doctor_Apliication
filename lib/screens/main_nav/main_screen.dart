@@ -51,16 +51,12 @@ class _MainScreenState extends State<MainScreen> {
       height: 68,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: const LinearGradient(
-          colors: [AppTheme.lightGreen, AppTheme.primaryGreen],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: AppTheme.primaryColor,
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primaryGreen.withValues(alpha: 0.45),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
+            color: AppTheme.primaryColor.withValues(alpha: 0.35),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -82,8 +78,9 @@ class _MainScreenState extends State<MainScreen> {
     return BottomAppBar(
       shape: const CircularNotchedRectangle(),
       notchMargin: 8,
-      color: AppTheme.white,
-      elevation: 8,
+      color: AppTheme.surfaceColor,
+      elevation: 0,
+      shadowColor: Colors.transparent,
       child: SizedBox(
         height: 60,
         child: Row(
@@ -125,7 +122,7 @@ class _MainScreenState extends State<MainScreen> {
     return Expanded(
       child: InkWell(
         onTap: () => setState(() => _currentIndex = index),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),
           child: Column(
@@ -133,7 +130,7 @@ class _MainScreenState extends State<MainScreen> {
             children: [
               Icon(
                 isActive ? activeIcon : inactiveIcon,
-                color: isActive ? AppTheme.primaryGreen : AppTheme.textLight,
+                color: isActive ? AppTheme.primaryColor : AppTheme.textLight,
                 size: 24,
               ),
               const SizedBox(height: 2),
@@ -141,8 +138,9 @@ class _MainScreenState extends State<MainScreen> {
                 label,
                 style: TextStyle(
                   fontSize: 11,
-                  fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
-                  color: isActive ? AppTheme.primaryGreen : AppTheme.textLight,
+                  fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                  color: isActive ? AppTheme.primaryColor : AppTheme.textLight,
+                  fontFamily: AppTheme.fontFamily,
                 ),
               ),
             ],

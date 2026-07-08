@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:uuid/uuid.dart';
 import '../config/app_theme.dart';
 import '../services/history_service.dart';
 import '../services/api_service.dart';
@@ -116,28 +115,32 @@ class _DiagnosisResultScreenState extends State<DiagnosisResultScreen> {
             )
           else if (_errorMessage != null)
             SliverFillRemaining(
+              hasScrollBody: false,
               child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(AppTheme.spacingL),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.error_outline, color: AppTheme.errorRed, size: 64),
-                      const SizedBox(height: 16),
-                      const Text('Gagal Menganalisis', style: AppTheme.titleMedium),
-                      const SizedBox(height: 8),
-                      Text(
-                        _errorMessage!,
-                        style: AppTheme.bodyMedium,
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 24),
-                      ElevatedButton.icon(
-                        onPressed: _fetchDiagnosis,
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('Coba Lagi'),
-                      ),
-                    ],
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppTheme.spacingL),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.error_outline, color: AppTheme.errorRed, size: 64),
+                        const SizedBox(height: 16),
+                        const Text('Gagal Menganalisis', style: AppTheme.titleMedium),
+                        const SizedBox(height: 8),
+                        Text(
+                          _errorMessage!,
+                          style: AppTheme.bodyMedium,
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 24),
+                        ElevatedButton.icon(
+                          onPressed: _fetchDiagnosis,
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Coba Lagi'),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -169,18 +172,14 @@ class _DiagnosisResultScreenState extends State<DiagnosisResultScreen> {
       pinned: true,
       elevation: 0,
       backgroundColor: AppTheme.backgroundColor,
-      leading: IconButton(
-        onPressed: () => Navigator.of(context).pop(),
-        icon: Container(
-          padding: const EdgeInsets.all(AppTheme.spacingS),
-          decoration: BoxDecoration(
-            color: AppTheme.white.withValues(alpha: 0.9),
-            shape: BoxShape.circle,
+      leading: Padding(
+        padding: const EdgeInsets.only(left: 8.0),
+        child: IconButton(
+          onPressed: () => Navigator.of(context).pop(),
+          style: IconButton.styleFrom(
+            backgroundColor: AppTheme.white.withValues(alpha: 0.9),
           ),
-          child: const Icon(
-            Icons.arrow_back_rounded,
-            color: AppTheme.textDark,
-          ),
+          icon: const Icon(Icons.arrow_back_rounded, color: AppTheme.textDark),
         ),
       ),
       actions: [
@@ -188,17 +187,10 @@ class _DiagnosisResultScreenState extends State<DiagnosisResultScreen> {
           onPressed: () {
             // TODO: Implement share
           },
-          icon: Container(
-            padding: const EdgeInsets.all(AppTheme.spacingS),
-            decoration: BoxDecoration(
-              color: AppTheme.white.withValues(alpha: 0.9),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.share_rounded,
-              color: AppTheme.textDark,
-            ),
+          style: IconButton.styleFrom(
+            backgroundColor: AppTheme.white.withValues(alpha: 0.9),
           ),
+          icon: const Icon(Icons.share_rounded, color: AppTheme.textDark),
         ),
         IconButton(
           onPressed: () {
@@ -206,16 +198,12 @@ class _DiagnosisResultScreenState extends State<DiagnosisResultScreen> {
               _isSaved = !_isSaved;
             });
           },
-          icon: Container(
-            padding: const EdgeInsets.all(AppTheme.spacingS),
-            decoration: BoxDecoration(
-              color: AppTheme.white.withValues(alpha: 0.9),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              _isSaved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
-              color: _isSaved ? AppTheme.primaryGreen : AppTheme.textDark,
-            ),
+          style: IconButton.styleFrom(
+            backgroundColor: AppTheme.white.withValues(alpha: 0.9),
+          ),
+          icon: Icon(
+            _isSaved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+            color: _isSaved ? AppTheme.primaryGreen : AppTheme.textDark,
           ),
         ),
         const SizedBox(width: AppTheme.spacingS),

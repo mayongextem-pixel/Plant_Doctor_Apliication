@@ -298,27 +298,31 @@ class _AdminScreenState extends State<AdminScreen>
                 ),
                 child: TabBar(
                   controller: _tabController,
+                  isScrollable: true,
+                  tabAlignment: TabAlignment.fill,
                   // Indikator aktif: pill putih di bawah tab
                   indicator: const UnderlineTabIndicator(
                     borderSide: BorderSide(color: Colors.white, width: 3),
-                    insets: EdgeInsets.symmetric(horizontal: 24),
+                    insets: EdgeInsets.symmetric(horizontal: 16),
                     borderRadius: BorderRadius.vertical(top: Radius.circular(4)),
                   ),
                   indicatorSize: TabBarIndicatorSize.tab,
                   labelColor: Colors.white,
                   unselectedLabelColor: Colors.white.withValues(alpha: 0.55),
                   labelStyle: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 13),
+                      fontWeight: FontWeight.bold, fontSize: 12),
                   unselectedLabelStyle:
-                      const TextStyle(fontWeight: FontWeight.w400, fontSize: 13),
+                      const TextStyle(fontWeight: FontWeight.w400, fontSize: 12),
+                  labelPadding: const EdgeInsets.symmetric(horizontal: 8),
                   tabs: const [
                     Tab(
                       height: 50,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.eco_rounded, size: 18),
-                          SizedBox(width: 6),
+                          Icon(Icons.eco_rounded, size: 16),
+                          SizedBox(width: 4),
                           Text('Koleksi Tanaman'),
                         ],
                       ),
@@ -327,9 +331,10 @@ class _AdminScreenState extends State<AdminScreen>
                       height: 50,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.article_rounded, size: 18),
-                          SizedBox(width: 6),
+                          Icon(Icons.article_rounded, size: 16),
+                          SizedBox(width: 4),
                           Text('Artikel'),
                         ],
                       ),
@@ -338,9 +343,10 @@ class _AdminScreenState extends State<AdminScreen>
                       height: 50,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.people_rounded, size: 18),
-                          SizedBox(width: 6),
+                          Icon(Icons.people_rounded, size: 16),
+                          SizedBox(width: 4),
                           Text('Pengguna'),
                         ],
                       ),

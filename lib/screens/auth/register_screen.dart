@@ -79,14 +79,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
         }
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(msg), backgroundColor: AppTheme.errorRed),
+            SnackBar(
+              content: Text(msg),
+              backgroundColor: AppTheme.errorColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+              ),
+            ),
           );
         }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Koneksi bermasalah: $e'), backgroundColor: AppTheme.errorRed),
+          SnackBar(
+            content: Text('Koneksi bermasalah: $e'),
+            backgroundColor: AppTheme.errorColor,
+          ),
         );
       }
     } finally {
@@ -99,73 +108,138 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Daftar'),
-        leading: BackButton(
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ),
+      backgroundColor: AppTheme.neutralColor,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingL),
-          child: Form(
-            key: _formKey,
-            autovalidateMode: AutovalidateMode.onUserInteraction,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: AppTheme.spacingXL),
-                const Text(
-                  'Buat Akun Baru',
-                  style: AppTheme.titleLarge,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // ── Hero header ────────────────────────────────────────────
+              Container(
+                color: AppTheme.primaryColor,
+                padding: const EdgeInsets.fromLTRB(
+                  AppTheme.spacingS,
+                  AppTheme.spacingS,
+                  AppTheme.spacingS,
+                  AppTheme.spacingM,
                 ),
-                const SizedBox(height: AppTheme.spacingS),
-                Text(
-                  'Bergabung dan mulai rawat tanamanmu',
-                  style: AppTheme.bodyMedium.copyWith(
-                    color: AppTheme.textLight,
+                child: Row(
+                  children: [
+                    IconButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(
+                        Icons.arrow_back_rounded,
+                        color: AppTheme.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                color: AppTheme.primaryColor,
+                padding: const EdgeInsets.fromLTRB(
+                  AppTheme.spacingS,
+                  0,
+                  AppTheme.spacingS,
+                  AppTheme.spacingL,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Buat Akun',
+                      style: AppTheme.displayMedium.copyWith(
+                        color: AppTheme.white,
+                        fontFamily: AppTheme.fontFamily,
+                      ),
+                    ),
+                    const SizedBox(height: AppTheme.spacingXS),
+                    Text(
+                      'Baru.',
+                      style: AppTheme.displayMedium.copyWith(
+                        color: AppTheme.tertiaryColor,
+                        fontFamily: AppTheme.fontFamily,
+                      ),
+                    ),
+                    const SizedBox(height: AppTheme.spacingXS),
+                    Text(
+                      'Bergabung dan mulai rawat tanamanmu.',
+                      style: AppTheme.bodySmall.copyWith(
+                        color: AppTheme.white.withValues(alpha: 0.75),
+                        fontFamily: AppTheme.fontFamily,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // ── Form area ─────────────────────────────────────────────
+              Container(
+                decoration: const BoxDecoration(
+                  color: AppTheme.neutralColor,
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(AppTheme.radiusXLarge),
                   ),
                 ),
-                const SizedBox(height: AppTheme.spacingXL),
-                AppTextField(
-                  label: 'Nama Lengkap',
-                  controller: _nameController,
-                  validator: Validators.name,
-                  prefixIcon: Icons.person_rounded,
+                padding: const EdgeInsets.all(AppTheme.spacingS),
+                child: Form(
+                  key: _formKey,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: AppTheme.spacingS),
+                      Text(
+                        'Detail Akun',
+                        style: AppTheme.titleMedium.copyWith(
+                          fontFamily: AppTheme.fontFamily,
+                        ),
+                      ),
+                      const SizedBox(height: AppTheme.spacingXS),
+                      AppTextField(
+                        label: 'Nama Lengkap',
+                        controller: _nameController,
+                        validator: Validators.name,
+                        prefixIcon: Icons.person_outline_rounded,
+                      ),
+                      const SizedBox(height: AppTheme.spacingXS),
+                      AppTextField(
+                        label: 'Email',
+                        controller: _emailController,
+                        validator: Validators.email,
+                        keyboardType: TextInputType.emailAddress,
+                        prefixIcon: Icons.email_outlined,
+                      ),
+                      const SizedBox(height: AppTheme.spacingXS),
+                      AppTextField(
+                        label: 'Password',
+                        controller: _passwordController,
+                        validator: Validators.password,
+                        isPasswordField: true,
+                        prefixIcon: Icons.lock_outlined,
+                      ),
+                      const SizedBox(height: AppTheme.spacingXS),
+                      AppTextField(
+                        label: 'Konfirmasi Password',
+                        controller: _confirmPasswordController,
+                        validator: Validators.confirmPassword(_passwordController),
+                        isPasswordField: true,
+                        prefixIcon: Icons.lock_outline_rounded,
+                      ),
+                      const SizedBox(height: AppTheme.spacingS),
+                      AppButton(
+                        label: 'Daftar',
+                        onPressed: _handleRegister,
+                        isLoading: _isLoading,
+                        variant: AppButtonVariant.primary,
+                      ),
+                      const SizedBox(height: AppTheme.spacingXS),
+                      const SizedBox(height: AppTheme.spacingS),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: AppTheme.spacingM),
-                AppTextField(
-                  label: 'Email',
-                  controller: _emailController,
-                  validator: Validators.email,
-                  keyboardType: TextInputType.emailAddress,
-                  prefixIcon: Icons.email_rounded,
-                ),
-                const SizedBox(height: AppTheme.spacingM),
-                AppTextField(
-                  label: 'Password',
-                  controller: _passwordController,
-                  validator: Validators.password,
-                  isPasswordField: true,
-                  prefixIcon: Icons.lock_rounded,
-                ),
-                const SizedBox(height: AppTheme.spacingM),
-                AppTextField(
-                  label: 'Konfirmasi Password',
-                  controller: _confirmPasswordController,
-                  validator: Validators.confirmPassword(_passwordController),
-                  isPasswordField: true,
-                  prefixIcon: Icons.lock_outline_rounded,
-                ),
-                const SizedBox(height: AppTheme.spacingXL),
-                AppButton(
-                  label: 'Daftar',
-                  onPressed: _handleRegister,
-                  isLoading: _isLoading,
-                ),
-                const SizedBox(height: AppTheme.spacingL),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

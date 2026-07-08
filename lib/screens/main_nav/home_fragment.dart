@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../config/app_theme.dart';
 import '../../utils/page_transitions.dart';
+import '../../services/history_service.dart';
 import '../menus/riwayat_screen.dart';
 import '../menus/artikel_screen.dart';
 import '../menus/tips_harian_screen.dart';
@@ -18,33 +20,47 @@ class HomeFragment extends StatefulWidget {
 class _HomeFragmentState extends State<HomeFragment> {
   final TextEditingController _searchController = TextEditingController();
 
-  // Mock data for plant history
-  final List<PlantHistory> _plantHistory = [
-    PlantHistory(
-      id: '1',
-      plantName: 'Monstera Deliciosa',
-      status: 'Sehat',
-      scanDate: DateTime.now().subtract(const Duration(days: 2)),
-      imageUrl: '',
-      isHealthy: true,
-    ),
-    PlantHistory(
-      id: '2',
-      plantName: 'Sansevieria',
-      status: 'Terinfeksi',
-      scanDate: DateTime.now().subtract(const Duration(days: 5)),
-      imageUrl: '',
-      isHealthy: false,
-    ),
-    PlantHistory(
-      id: '3',
-      plantName: 'Pothos',
-      status: 'Sehat',
-      scanDate: DateTime.now().subtract(const Duration(days: 7)),
-      imageUrl: '',
-      isHealthy: true,
-    ),
-  ];
+  List<ScanHistory> _plantHistory = [];
+  bool _isLoadingHistory = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHistory();
+  }
+
+  Future<void> _loadHistory() async {
+    final history = await HistoryService.getHistory();
+    if (mounted) {
+      setState(() {
+        _plantHistory = [
+          ...history,
+          ScanHistory(
+            id: 'mock1',
+            diseaseName: 'Monstera Deliciosa',
+            accuracy: 1.0,
+            date: DateTime.now().subtract(const Duration(days: 2)),
+            imagePath: 'lib/assets/Monstera Deliciosa.png',
+          ),
+          ScanHistory(
+            id: 'mock2',
+            diseaseName: 'Sansevieria - Terinfeksi',
+            accuracy: 0.85,
+            date: DateTime.now().subtract(const Duration(days: 5)),
+            imagePath: 'lib/assets/Sanseveria.png',
+          ),
+          ScanHistory(
+            id: 'mock3',
+            diseaseName: 'Pothos - Sehat',
+            accuracy: 0.95,
+            date: DateTime.now().subtract(const Duration(days: 7)),
+            imagePath: 'lib/assets/Pathos.png',
+          ),
+        ];
+        _isLoadingHistory = false;
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -56,56 +72,61 @@ class _HomeFragmentState extends State<HomeFragment> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            // Custom AppBar with Greeting and Search
-            _buildAppBar(),
+        child: RefreshIndicator(
+          onRefresh: _loadHistory,
+          color: AppTheme.primaryGreen,
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              // Custom AppBar with Greeting and Search
+              _buildAppBar(),
 
-            // Quick Action Menu
-            SliverToBoxAdapter(
-              child: _buildQuickActionMenu(),
-            ),
+              // Quick Action Menu
+              SliverToBoxAdapter(
+                child: _buildQuickActionMenu(),
+              ),
 
-            // Promotional Banner (Tips Harian)
-            SliverToBoxAdapter(
-              child: _buildPromotionalBanner(),
-            ),
+              // Promotional Banner (Tips Harian)
+              SliverToBoxAdapter(
+                child: _buildPromotionalBanner(),
+              ),
 
-            // Section Header
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppTheme.spacingM,
-                  AppTheme.spacingXL,
-                  AppTheme.spacingM,
-                  AppTheme.spacingM,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Koleksi Tanamanku',
-                      style: AppTheme.titleLarge,
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        // TODO: Navigate to full collection
-                      },
-                      child: const Text('Lihat Semua'),
-                    ),
-                  ],
+              // Section Header
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppTheme.spacingM,
+                    AppTheme.spacingXL,
+                    AppTheme.spacingM,
+                    AppTheme.spacingM,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Koleksi Tanamanku',
+                        style: AppTheme.titleLarge,
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          // TODO: Navigate to full collection
+                        },
+                        child: const Text('Lihat Semua'),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
 
-            // Plant Collection Grid
-            _buildPlantCollectionGrid(),
+              // Plant Collection Grid
+              _buildPlantCollectionGrid(),
 
-            // Bottom padding for FAB
-            const SliverToBoxAdapter(
-              child: SizedBox(height: 100),
-            ),
-          ],
+              // Bottom padding for FAB
+              const SliverToBoxAdapter(
+                child: SizedBox(height: 100),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -120,15 +141,18 @@ class _HomeFragmentState extends State<HomeFragment> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Greeting
-            const Text(
+            Text(
               'Selamat Datang! 👋',
-              style: AppTheme.displayMedium,
+              style: AppTheme.displayMedium.copyWith(
+                fontFamily: AppTheme.fontFamily,
+              ),
             ),
             const SizedBox(height: AppTheme.spacingXS),
             Text(
               'Mari rawat tanamanmu hari ini',
-              style: AppTheme.bodyMedium.copyWith(
+              style: AppTheme.bodySmall.copyWith(
                 color: AppTheme.textLight,
+                fontFamily: AppTheme.fontFamily,
               ),
             ),
             const SizedBox(height: AppTheme.spacingM),
@@ -165,7 +189,7 @@ class _HomeFragmentState extends State<HomeFragment> {
       QuickAction(
         icon: Icons.history_rounded,
         label: 'Riwayat',
-        color: AppTheme.primaryGreen,
+        color: AppTheme.primaryColor,
         onTap: () {
           Navigator.of(context).push(
             PageTransitions.slideAndFadeTransition(const RiwayatScreen()),
@@ -175,7 +199,7 @@ class _HomeFragmentState extends State<HomeFragment> {
       QuickAction(
         icon: Icons.article_rounded,
         label: 'Artikel',
-        color: AppTheme.accentOrange,
+        color: AppTheme.secondaryColor,
         onTap: () {
           Navigator.of(context).push(
             PageTransitions.slideAndFadeTransition(const ArtikelScreen()),
@@ -185,7 +209,7 @@ class _HomeFragmentState extends State<HomeFragment> {
       QuickAction(
         icon: Icons.lightbulb_rounded,
         label: 'Tips Harian',
-        color: AppTheme.accentYellow,
+        color: AppTheme.darkGreen,
         onTap: () {
           Navigator.of(context).push(
             PageTransitions.slideAndFadeTransition(const TipsHarianScreen()),
@@ -195,7 +219,7 @@ class _HomeFragmentState extends State<HomeFragment> {
       QuickAction(
         icon: Icons.bookmark_rounded,
         label: 'Tersimpan',
-        color: AppTheme.lightGreen,
+        color: AppTheme.accentColor,
         onTap: () {
           Navigator.of(context).push(
             PageTransitions.slideAndFadeTransition(const TersimpanScreen()),
@@ -235,8 +259,8 @@ class _HomeFragmentState extends State<HomeFragment> {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                AppTheme.lightGreen,
-                AppTheme.primaryGreen,
+                AppTheme.primaryColor,
+                AppTheme.secondaryColor,
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -244,9 +268,9 @@ class _HomeFragmentState extends State<HomeFragment> {
             borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
             boxShadow: [
               BoxShadow(
-                color: AppTheme.primaryGreen.withValues(alpha: 0.3),
-                blurRadius: 12,
-                offset: const Offset(0, 6),
+                color: AppTheme.primaryColor.withValues(alpha: 0.25),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
@@ -354,7 +378,7 @@ class _HomeFragmentState extends State<HomeFragment> {
       sliver: SliverGrid(
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          childAspectRatio: 0.75,
+          childAspectRatio: 0.70,
           crossAxisSpacing: AppTheme.spacingM,
           mainAxisSpacing: AppTheme.spacingM,
         ),
@@ -424,12 +448,16 @@ class _QuickActionCard extends StatelessWidget {
 
 /// Plant Card Widget for Grid
 class _PlantCard extends StatelessWidget {
-  final PlantHistory plant;
+  final ScanHistory plant;
 
   const _PlantCard({required this.plant});
 
   @override
   Widget build(BuildContext context) {
+    final isHealthy = plant.diseaseName.toLowerCase().contains('sehat') || 
+                      plant.diseaseName.toLowerCase() == 'monstera deliciosa';
+    final isAsset = plant.imagePath.startsWith('lib/assets/');
+
     return InkWell(
       onTap: () {
         // TODO: Navigate to plant detail
@@ -443,63 +471,77 @@ class _PlantCard extends StatelessWidget {
             // Plant Image
             Expanded(
               flex: 3,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: AppTheme.surfaceColor,
-                  borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(AppTheme.radiusMedium),
-                  ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(AppTheme.radiusMedium),
                 ),
-                child: Stack(
-                  children: [
-                    Center(
-                      child: Icon(
-                        Icons.local_florist_rounded,
-                        size: 48,
-                        color: AppTheme.primaryGreen.withValues(alpha: 0.3),
+                child: Container(
+                  width: double.infinity,
+                  color: AppTheme.surfaceColor,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      // Gambar tanaman
+                      if (plant.imagePath.isNotEmpty)
+                        isAsset
+                            ? Image.asset(
+                                plant.imagePath,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
+                              )
+                            : Image.file(
+                                File(plant.imagePath),
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
+                              )
+                      else
+                        _buildPlaceholder(),
+                      Positioned(
+                        top: AppTheme.spacingS,
+                        right: AppTheme.spacingS,
+                        child: _StatusBadge(isHealthy: isHealthy),
                       ),
-                    ),
-                    Positioned(
-                      top: AppTheme.spacingS,
-                      right: AppTheme.spacingS,
-                      child: _StatusBadge(isHealthy: plant.isHealthy),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
 
             // Plant Info
-            Expanded(
-              flex: 2,
-              child: Padding(
-                padding: const EdgeInsets.all(AppTheme.spacingM),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      plant.plantName,
-                      style: AppTheme.titleSmall.copyWith(fontSize: 16),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.calendar_today_rounded,
-                          size: 14,
-                          color: AppTheme.textLight,
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppTheme.spacingM,
+                vertical: AppTheme.spacingS,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    plant.diseaseName,
+                    style: AppTheme.titleSmall.copyWith(fontSize: 14),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.calendar_today_rounded,
+                        size: 12,
+                        color: AppTheme.textLight,
+                      ),
+                      const SizedBox(width: AppTheme.spacingXS),
+                      Expanded(
+                        child: Text(
+                          _formatDate(plant.date),
+                          style: AppTheme.bodySmall.copyWith(fontSize: 11),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(width: AppTheme.spacingXS),
-                        Text(
-                          _formatDate(plant.scanDate),
-                          style: AppTheme.bodySmall,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ],
@@ -521,6 +563,16 @@ class _PlantCard extends StatelessWidget {
     } else {
       return '${date.day}/${date.month}/${date.year}';
     }
+  }
+
+  Widget _buildPlaceholder() {
+    return Center(
+      child: Icon(
+        Icons.local_florist_rounded,
+        size: 48,
+        color: AppTheme.primaryGreen.withValues(alpha: 0.3),
+      ),
+    );
   }
 }
 
@@ -568,23 +620,5 @@ class QuickAction {
     required this.label,
     required this.color,
     required this.onTap,
-  });
-}
-
-class PlantHistory {
-  final String id;
-  final String plantName;
-  final String status;
-  final DateTime scanDate;
-  final String imageUrl;
-  final bool isHealthy;
-
-  PlantHistory({
-    required this.id,
-    required this.plantName,
-    required this.status,
-    required this.scanDate,
-    required this.imageUrl,
-    required this.isHealthy,
   });
 }

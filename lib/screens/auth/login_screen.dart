@@ -56,7 +56,6 @@ class _LoginScreenState extends State<LoginScreen> {
         final role = responseData['data']['user']['role']['slug'];
 
         final prefs = await SharedPreferences.getInstance();
-        // Simpan user_id agar data lokal bisa di-scope per akun (mencegah data leak)
         final userId = responseData['data']['user']['id']?.toString() ?? '';
         final userName = responseData['data']['user']['name']?.toString() ?? '';
         await prefs.setBool('isLoggedIn', true);
@@ -86,8 +85,11 @@ class _LoginScreenState extends State<LoginScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: AppTheme.errorRed,
+        backgroundColor: AppTheme.errorColor,
         behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+        ),
       ),
     );
   }
@@ -95,81 +97,161 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Masuk'),
-        leading: BackButton(
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ),
+      backgroundColor: AppTheme.neutralColor,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingL),
-          child: Form(
-            key: _formKey,
-            autovalidateMode: AutovalidateMode.onUserInteraction,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: AppTheme.spacingXL),
-                const Text(
-                  'Selamat datang kembali',
-                  style: AppTheme.titleLarge,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // ── Hero header (dark primary background) ─────────────────
+              Container(
+                color: AppTheme.primaryColor,
+                padding: const EdgeInsets.fromLTRB(
+                  AppTheme.spacingS,
+                  AppTheme.spacingS,
+                  AppTheme.spacingS,
+                  AppTheme.spacingM,
                 ),
-                const SizedBox(height: AppTheme.spacingS),
-                Text(
-                  'Masuk untuk melanjutkan',
-                  style: AppTheme.bodyMedium.copyWith(
-                    color: AppTheme.textLight,
+                child: Row(
+                  children: [
+                    IconButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(
+                        Icons.arrow_back_rounded,
+                        color: AppTheme.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                color: AppTheme.primaryColor,
+                padding: const EdgeInsets.fromLTRB(
+                  AppTheme.spacingS,
+                  0,
+                  AppTheme.spacingS,
+                  AppTheme.spacingL,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Selamat Datang',
+                      style: AppTheme.displayMedium.copyWith(
+                        color: AppTheme.white,
+                        fontFamily: AppTheme.fontFamily,
+                      ),
+                    ),
+                    const SizedBox(height: AppTheme.spacingXS),
+                    Text(
+                      'Kembali!',
+                      style: AppTheme.displayMedium.copyWith(
+                        color: AppTheme.tertiaryColor,
+                        fontFamily: AppTheme.fontFamily,
+                      ),
+                    ),
+                    const SizedBox(height: AppTheme.spacingXS),
+                    Text(
+                      'Masuk untuk melanjutkan diagnosis tanaman.',
+                      style: AppTheme.bodySmall.copyWith(
+                        color: AppTheme.white.withValues(alpha: 0.75),
+                        fontFamily: AppTheme.fontFamily,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // ── Form area (white card) ──────────────────────────────────
+              Container(
+                decoration: BoxDecoration(
+                  color: AppTheme.neutralColor,
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(AppTheme.radiusXLarge),
                   ),
                 ),
-                const SizedBox(height: AppTheme.spacingXL),
-                AppTextField(
-                  label: 'Email',
-                  controller: _emailController,
-                  validator: Validators.email,
-                  keyboardType: TextInputType.emailAddress,
-                  prefixIcon: Icons.email_rounded,
-                ),
-                const SizedBox(height: AppTheme.spacingM),
-                AppTextField(
-                  label: 'Password',
-                  controller: _passwordController,
-                  validator: Validators.password,
-                  isPasswordField: true,
-                  prefixIcon: Icons.lock_rounded,
-                ),
-                const SizedBox(height: AppTheme.spacingXL),
-                AppButton(
-                  label: 'Masuk',
-                  onPressed: _handleLogin,
-                  isLoading: _isLoading,
-                ),
-                const SizedBox(height: AppTheme.spacingL),
-                Center(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                padding: const EdgeInsets.all(AppTheme.spacingS),
+                child: Form(
+                  key: _formKey,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      const SizedBox(height: AppTheme.spacingS),
                       Text(
-                        'Belum punya akun? ',
-                        style: AppTheme.bodyMedium.copyWith(
-                          color: AppTheme.textMedium,
+                        'Masuk ke Akun',
+                        style: AppTheme.titleMedium.copyWith(
+                          fontFamily: AppTheme.fontFamily,
                         ),
                       ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            PageTransitions.slideAndFadeTransition(
-                              const RegisterScreen(),
-                            ),
-                          );
-                        },
-                        child: const Text('Daftar'),
+                      const SizedBox(height: AppTheme.spacingXS),
+                      AppTextField(
+                        label: 'Email',
+                        controller: _emailController,
+                        validator: Validators.email,
+                        keyboardType: TextInputType.emailAddress,
+                        prefixIcon: Icons.email_outlined,
                       ),
+                      const SizedBox(height: AppTheme.spacingXS),
+                      AppTextField(
+                        label: 'Password',
+                        controller: _passwordController,
+                        validator: Validators.password,
+                        isPasswordField: true,
+                        prefixIcon: Icons.lock_outlined,
+                      ),
+                      const SizedBox(height: AppTheme.spacingS),
+                      // ── button-primary: kuning CTA ─────────────────
+                      AppButton(
+                        label: 'Masuk',
+                        onPressed: _handleLogin,
+                        isLoading: _isLoading,
+                        variant: AppButtonVariant.primary,
+                      ),
+                      const SizedBox(height: AppTheme.spacingXS),
+                      // ── Daftar link ────────────────────────────────
+                      Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Belum punya akun? ',
+                              style: AppTheme.bodySmall.copyWith(
+                                fontFamily: AppTheme.fontFamily,
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).push(
+                                  PageTransitions.slideAndFadeTransition(
+                                    const RegisterScreen(),
+                                  ),
+                                );
+                              },
+                              style: TextButton.styleFrom(
+                                foregroundColor: AppTheme.secondaryColor,
+                                padding: EdgeInsets.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              child: Text(
+                                'Daftar Sekarang',
+                                style: AppTheme.bodySmall.copyWith(
+                                  color: AppTheme.secondaryColor,
+                                  fontWeight: FontWeight.w600,
+                                  decoration: TextDecoration.underline,
+                                  fontFamily: AppTheme.fontFamily,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: AppTheme.spacingS),
                     ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

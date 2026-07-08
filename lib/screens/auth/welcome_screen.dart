@@ -94,10 +94,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           Text(
             title,
             style: const TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.primaryGreen,
-              letterSpacing: -1,
+              fontSize: 27,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.primaryColor,
+              letterSpacing: 0,
             ),
             textAlign: TextAlign.center,
           ),
@@ -132,13 +132,18 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryGreen,
+                    backgroundColor: AppTheme.tertiaryColor,
+                    foregroundColor: AppTheme.onSurfaceColor,
+                    elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   ),
-                  child: const Text('Next', style: TextStyle(color: Colors.white)),
+                  child: const Text(
+                    'Lanjut',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
                 ),
               ],
             )
@@ -160,18 +165,19 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryGreen,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      backgroundColor: AppTheme.tertiaryColor,
+                      foregroundColor: AppTheme.onSurfaceColor,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
                       ),
                     ),
                     child: const Text(
-                      "Let's Started",
+                      "Mulai Sekarang",
                       style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -182,12 +188,15 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   }
 
   Widget _buildDot(int index) {
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
       margin: const EdgeInsets.only(right: 8),
       height: 8,
       width: _currentPage == index ? 24 : 8,
       decoration: BoxDecoration(
-        color: _currentPage == index ? AppTheme.primaryGreen : AppTheme.lightGreen.withValues(alpha: 0.3),
+        color: _currentPage == index
+            ? AppTheme.primaryColor
+            : AppTheme.mutedColor,
         borderRadius: BorderRadius.circular(4),
       ),
     );

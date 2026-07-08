@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import '../config/app_theme.dart';
 
-enum AppButtonVariant { primary, outlined }
+/// Variant sesuai Design.md.md:
+/// • [primary]   → button-primary: background kuning tertiary (#FCCC62), teks gelap
+/// • [secondary] → button-secondary: background hijau primary (#0B3D33), teks putih
+/// • [outlined]  → border primary, teks primary, background transparan
+enum AppButtonVariant { primary, secondary, outlined }
 
 class AppButton extends StatelessWidget {
   final String label;
@@ -23,13 +27,19 @@ class AppButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final buttonWidth = width ?? double.infinity;
+
     final child = isLoading
-        ? const SizedBox(
+        ? SizedBox(
             width: 20,
             height: 20,
             child: CircularProgressIndicator(
               strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(AppTheme.white),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                variant == AppButtonVariant.primary
+                    ? AppTheme.onSurfaceColor
+                    : AppTheme.white,
+              ),
             ),
           )
         : Row(
@@ -38,30 +48,77 @@ class AppButton extends StatelessWidget {
             children: [
               if (leadingIcon != null) ...[
                 Icon(leadingIcon, size: 20),
-                const SizedBox(width: AppTheme.spacingS),
+                const SizedBox(width: AppTheme.spacingXS),
               ],
               Text(label),
             ],
           );
 
-    final buttonWidth = width ?? double.infinity;
-
-    if (variant == AppButtonVariant.outlined) {
+    // button-primary: kuning (#FCCC62) + teks gelap
+    if (variant == AppButtonVariant.primary) {
       return SizedBox(
         width: buttonWidth,
-        height: 52,
-        child: OutlinedButton(
+        height: 48,
+        child: ElevatedButton(
           onPressed: isLoading ? null : onPressed,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppTheme.tertiaryColor,
+            foregroundColor: AppTheme.onSurfaceColor,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+            ),
+            textStyle: AppTheme.labelLarge.copyWith(
+              fontFamily: AppTheme.fontFamily,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           child: child,
         ),
       );
     }
 
+    // button-secondary: hijau tua (#0B3D33) + teks putih
+    if (variant == AppButtonVariant.secondary) {
+      return SizedBox(
+        width: buttonWidth,
+        height: 48,
+        child: ElevatedButton(
+          onPressed: isLoading ? null : onPressed,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppTheme.primaryColor,
+            foregroundColor: AppTheme.white,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+            ),
+            textStyle: AppTheme.labelLarge.copyWith(
+              fontFamily: AppTheme.fontFamily,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          child: child,
+        ),
+      );
+    }
+
+    // outlined
     return SizedBox(
       width: buttonWidth,
-      height: 52,
-      child: ElevatedButton(
+      height: 48,
+      child: OutlinedButton(
         onPressed: isLoading ? null : onPressed,
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppTheme.primaryColor,
+          side: const BorderSide(color: AppTheme.primaryColor, width: 1.5),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+          ),
+          textStyle: AppTheme.labelLarge.copyWith(
+            fontFamily: AppTheme.fontFamily,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         child: child,
       ),
     );

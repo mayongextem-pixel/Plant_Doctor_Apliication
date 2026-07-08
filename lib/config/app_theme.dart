@@ -3,258 +3,297 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // Modern Earthy Green Color Palette (update_design.md)
-  static const Color primaryGreen = Color(0xFF4A7C59); // Moss Green
-  static const Color darkGreen = Color(0xFF2F5233); // Olive Green
-  static const Color lightGreen = Color(0xFF7FB069); // Light Moss
-  static const Color backgroundColor = Color(0xFFFFFBF5); // Cream/Off-white
-  static const Color surfaceColor = Color(0xFFF5F5F0); // Soft Gray
-  static const Color accentOrange = Color(0xFFE07A5F); // Terracotta
-  static const Color accentYellow = Color(0xFFF2CC8F); // Soft Gold
-  static const Color textDark = Color(0xFF2D3142); // Charcoal
-  static const Color textMedium = Color(0xFF4F5D75); // Blue Gray
-  static const Color textLight = Color(0xFF9BA4B5); // Light Gray
-  static const Color errorRed = Color(0xFFD64545); // Soft Red
-  static const Color warningYellow = Color(0xFFF4A261); // Warm Yellow
-  static const Color successGreen = Color(0xFF81B29A); // Sage Green
-  static const Color white = Color(0xFFFFFFFF);
+  // ── "Green the Web" Design System ────────────────────────────────────────
+  // Palet warna sesuai Design.md.md
+  static const Color primaryColor        = Color(0xFF0B3D33); // Deep forest green
+  static const Color secondaryColor      = Color(0xFF1F7A62); // Muted teal-green
+  static const Color tertiaryColor       = Color(0xFFFCCC62); // Warm golden yellow (CTA)
+  static const Color neutralColor        = Color(0xFFF5F5F2); // Soft off-white
+  static const Color surfaceColor        = Color(0xFFFFFFFF); // Pure white
+  static const Color surfaceStrongColor  = Color(0xFF111111); // Dark
+  static const Color onSurfaceColor      = Color(0xFF222222); // Main body text
+  static const Color mutedColor          = Color(0xFFE5E7EB); // Light gray border
+  static const Color subtleColor         = Color(0xFFD7DDD9); // Soft gray-green neutral
+  static const Color accentColor         = Color(0xFF00B3A4); // Aqua accent
+  static const Color errorColor          = Color(0xFFD64545); // Error red
 
+  // Warna bantu lainnya (legacy compat & severity)
+  static const Color white              = Color(0xFFFFFFFF);
+  static const Color backgroundColor   = Color(0xFFF5F5F2); // = neutralColor
+  static const Color primaryGreen      = Color(0xFF0B3D33); // alias
+  static const Color lightGreen        = Color(0xFF1F7A62); // alias secondary
+  static const Color darkGreen         = Color(0xFF082B23); // lebih gelap
+  static const Color accentOrange      = Color(0xFFE07A5F); // terracotta (misc)
+  static const Color accentYellow      = Color(0xFFFCCC62); // alias tertiary
+  static const Color textDark          = Color(0xFF222222); // = onSurface
+  static const Color textMedium        = Color(0xFF4F5D6E); // body teks sedang
+  static const Color textLight         = Color(0xFF9BA4B5); // hint/muted
+  static const Color errorRed          = Color(0xFFD64545); // alias error
+  static const Color warningYellow     = Color(0xFFF4A261); // soft warning
+  static const Color successGreen      = Color(0xFF1F7A62); // alias secondary
 
-  // Modern Typography (Bold sans-serif for headers, clean for body)
+  // ── Typography ────────────────────────────────────────────────────────────
+  // Menggunakan Poppins (Google Fonts) sebagai font utama — clean & modern
   static String? fontFamily = GoogleFonts.poppins().fontFamily;
 
-  
+  // headline-display: 38px / bold
   static const TextStyle displayLarge = TextStyle(
-    fontSize: 32,
-    fontWeight: FontWeight.bold,
-    color: textDark,
-    letterSpacing: -0.5,
+    fontSize: 38,
+    fontWeight: FontWeight.w700,
+    color: onSurfaceColor,
+    letterSpacing: 0,
+    height: 1.3,
   );
 
+  // headline-lg: 27px / bold
   static const TextStyle displayMedium = TextStyle(
-    fontSize: 28,
-    fontWeight: FontWeight.bold,
-    color: textDark,
-    letterSpacing: -0.3,
+    fontSize: 27,
+    fontWeight: FontWeight.w700,
+    color: onSurfaceColor,
+    letterSpacing: 0,
+    height: 1.3,
   );
 
+  // headline-md: 21px / bold
   static const TextStyle titleLarge = TextStyle(
-    fontSize: 24,
-    fontWeight: FontWeight.bold,
-    color: textDark,
-  );
-
-  static const TextStyle titleMedium = TextStyle(
-    fontSize: 20,
-    fontWeight: FontWeight.w600,
-    color: textDark,
-  );
-
-  static const TextStyle titleSmall = TextStyle(
-    fontSize: 18,
-    fontWeight: FontWeight.w600,
-    color: textDark,
-  );
-
-  static const TextStyle bodyLarge = TextStyle(
-    fontSize: 16,
-    fontWeight: FontWeight.normal,
-    color: textMedium,
-    height: 1.5,
-  );
-
-  static const TextStyle bodyMedium = TextStyle(
-    fontSize: 14,
-    fontWeight: FontWeight.normal,
-    color: textMedium,
-    height: 1.5,
-  );
-
-  static const TextStyle bodySmall = TextStyle(
-    fontSize: 12,
-    fontWeight: FontWeight.normal,
-    color: textLight,
+    fontSize: 21,
+    fontWeight: FontWeight.w700,
+    color: onSurfaceColor,
     height: 1.4,
   );
 
-  static const TextStyle labelLarge = TextStyle(
+  // headline-sm: 18px / semibold
+  static const TextStyle titleMedium = TextStyle(
+    fontSize: 18,
+    fontWeight: FontWeight.w600,
+    color: onSurfaceColor,
+    height: 1.22,
+  );
+
+  static const TextStyle titleSmall = TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w600,
-    color: white,
+    color: onSurfaceColor,
   );
 
+  // body-lg: 18px / regular
+  static const TextStyle bodyLarge = TextStyle(
+    fontSize: 18,
+    fontWeight: FontWeight.w400,
+    color: onSurfaceColor,
+    height: 1.6,
+  );
+
+  // body-md: 16px / regular
+  static const TextStyle bodyMedium = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+    color: onSurfaceColor,
+    height: 1.6,
+  );
+
+  // body-sm: 14px / regular
+  static const TextStyle bodySmall = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w400,
+    color: textMedium,
+    height: 1.5,
+  );
+
+  // label-lg: 16px / regular
+  static const TextStyle labelLarge = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+    color: onSurfaceColor,
+    height: 1.2,
+  );
+
+  // label-md: 14px / regular
   static const TextStyle labelMedium = TextStyle(
     fontSize: 14,
-    fontWeight: FontWeight.w500,
+    fontWeight: FontWeight.w400,
     color: textMedium,
+    height: 1.2,
   );
 
-  // Rounded Corner Radius (16-24px as per design)
-  static const double radiusSmall = 12.0;
-  static const double radiusMedium = 16.0;
-  static const double radiusLarge = 24.0;
-  static const double radiusXLarge = 32.0;
+  // label-sm: 12px / regular
+  static const TextStyle labelSmall = TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.w400,
+    color: textLight,
+    height: 1.2,
+  );
 
-  // Spacing
-  static const double spacingXS = 4.0;
-  static const double spacingS = 8.0;
-  static const double spacingM = 16.0;
-  static const double spacingL = 24.0;
-  static const double spacingXL = 32.0;
+  // ── Border Radius ─────────────────────────────────────────────────────────
+  // rounded.none=0, sm=4, md=5, lg=8, xl=12, full=9999
+  static const double radiusNone   = 0.0;
+  static const double radiusSmall  = 4.0;
+  static const double radiusMedium = 5.0;
+  static const double radiusLarge  = 8.0;
+  static const double radiusXLarge = 12.0;
+  static const double radiusFull   = 9999.0;
+
+  // ── Spacing ───────────────────────────────────────────────────────────────
+  // xs=6, sm=16, md=28, lg=48, xl=112
+  static const double spacingXS  = 6.0;
+  static const double spacingS   = 16.0;
+  static const double spacingM   = 28.0;
+  static const double spacingL   = 48.0;
+  static const double spacingXL  = 112.0;
+
+  // convenience aliases (compat dengan kode lama yang memakai spacingXXL)
   static const double spacingXXL = 48.0;
 
-  // Elevation
-  static const double elevationLow = 2.0;
-  static const double elevationMedium = 4.0;
-  static const double elevationHigh = 8.0;
+  // ── Elevation ─────────────────────────────────────────────────────────────
+  static const double elevationLow    = 0.0; // flat — no shadow
+  static const double elevationMedium = 1.0;
+  static const double elevationHigh   = 2.0;
 
-
-  // Modern Card Decoration
+  // ── Card Decoration ───────────────────────────────────────────────────────
+  // Cards: white bg, muted border, 8px radius — no heavy shadow
   static BoxDecoration cardDecoration = BoxDecoration(
-    color: white,
-    borderRadius: BorderRadius.circular(radiusMedium),
-    boxShadow: [
-      BoxShadow(
-        color: primaryGreen.withValues(alpha: 0.08),
-        blurRadius: 12,
-        offset: const Offset(0, 4),
-      ),
-    ],
+    color: surfaceColor,
+    borderRadius: BorderRadius.circular(radiusLarge),
+    border: Border.all(color: mutedColor, width: 1),
   );
 
   static BoxDecoration cardDecorationElevated = BoxDecoration(
-    color: white,
-    borderRadius: BorderRadius.circular(radiusLarge),
+    color: surfaceColor,
+    borderRadius: BorderRadius.circular(radiusXLarge),
+    border: Border.all(color: subtleColor, width: 1),
     boxShadow: [
       BoxShadow(
-        color: primaryGreen.withValues(alpha: 0.12),
-        blurRadius: 16,
-        offset: const Offset(0, 8),
+        color: onSurfaceColor.withValues(alpha: 0.06),
+        blurRadius: 8,
+        offset: const Offset(0, 2),
       ),
     ],
   );
 
-  // Updated ThemeData
+  // ── ThemeData ─────────────────────────────────────────────────────────────
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
       fontFamily: fontFamily,
-      
-      // Color Scheme
+
       colorScheme: ColorScheme.light(
-        primary: primaryGreen,
-        primaryContainer: lightGreen,
-        secondary: accentOrange,
-        secondaryContainer: accentYellow,
-        surface: backgroundColor,
-        surfaceContainerHighest: surfaceColor,
-        error: errorRed,
+        primary: primaryColor,
+        primaryContainer: secondaryColor,
+        secondary: secondaryColor,
+        secondaryContainer: tertiaryColor,
+        tertiary: tertiaryColor,
+        surface: neutralColor,
+        surfaceContainerHighest: mutedColor,
+        error: errorColor,
         onPrimary: white,
         onSecondary: white,
-        onSurface: textDark,
+        onSurface: onSurfaceColor,
         onError: white,
       ),
-      
-      scaffoldBackgroundColor: backgroundColor,
-      
-      // AppBar Theme
+
+      scaffoldBackgroundColor: neutralColor,
+
+      // AppBar — flat, light background
       appBarTheme: AppBarTheme(
-        backgroundColor: backgroundColor,
-        foregroundColor: textDark,
+        backgroundColor: neutralColor,
+        foregroundColor: onSurfaceColor,
         elevation: 0,
         centerTitle: false,
-        titleTextStyle: titleLarge,
+        titleTextStyle: titleLarge.copyWith(fontFamily: fontFamily),
         systemOverlayStyle: SystemUiOverlayStyle.dark,
-        iconTheme: const IconThemeData(color: textDark),
+        iconTheme: const IconThemeData(color: onSurfaceColor),
       ),
 
-      // Card Theme (Rounded 16-24px)
+      // Card — subtle border, no heavy shadow
       cardTheme: CardThemeData(
-        color: white,
-        elevation: elevationLow,
-        shadowColor: primaryGreen.withValues(alpha: 0.1),
+        color: surfaceColor,
+        elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(radiusMedium),
+          borderRadius: BorderRadius.circular(radiusLarge),
+          side: const BorderSide(color: mutedColor, width: 1),
         ),
         margin: const EdgeInsets.symmetric(
-          horizontal: spacingM,
-          vertical: spacingS,
+          horizontal: spacingS,
+          vertical: spacingXS,
         ),
       ),
 
-      // FloatingActionButton Theme (Prominent & Oversized)
+      // FAB — primary green (dark)
       floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: primaryGreen,
+        backgroundColor: primaryColor,
         foregroundColor: white,
-        elevation: elevationHigh,
+        elevation: 2,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(radiusMedium),
-        ),
-        extendedSizeConstraints: const BoxConstraints.tightFor(
-          height: 64,
+          borderRadius: BorderRadius.circular(radiusXLarge),
         ),
       ),
 
-      // Bottom Navigation Bar Theme
+      // Bottom Navigation
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: white,
-        selectedItemColor: primaryGreen,
+        backgroundColor: surfaceColor,
+        selectedItemColor: primaryColor,
         unselectedItemColor: textLight,
         type: BottomNavigationBarType.fixed,
-        elevation: elevationMedium,
-        selectedLabelStyle: labelMedium,
-        unselectedLabelStyle: bodySmall,
+        elevation: 0,
+        selectedLabelStyle: labelMedium.copyWith(fontWeight: FontWeight.w600),
+        unselectedLabelStyle: labelSmall,
       ),
 
-      // Bottom Sheet Theme
+      // Bottom Sheet
       bottomSheetTheme: BottomSheetThemeData(
-        backgroundColor: white,
+        backgroundColor: surfaceColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
-            top: Radius.circular(radiusLarge),
+            top: Radius.circular(radiusXLarge),
           ),
         ),
-        elevation: elevationHigh,
+        elevation: 2,
       ),
 
-      // Input Decoration Theme
+      // Input — white surface, 5px radius, no fill border
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: surfaceColor,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radiusMedium),
-          borderSide: BorderSide.none,
+          borderSide: const BorderSide(color: mutedColor, width: 1),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radiusMedium),
-          borderSide: BorderSide.none,
+          borderSide: const BorderSide(color: mutedColor, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radiusMedium),
-          borderSide: const BorderSide(color: primaryGreen, width: 2),
+          borderSide: const BorderSide(color: primaryColor, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radiusMedium),
-          borderSide: const BorderSide(color: errorRed, width: 1),
+          borderSide: const BorderSide(color: errorColor, width: 1),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(radiusMedium),
+          borderSide: const BorderSide(color: errorColor, width: 2),
         ),
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: spacingM,
-          vertical: spacingM,
+          horizontal: spacingS,
+          vertical: 10,
         ),
-        hintStyle: bodyMedium.copyWith(color: textLight),
+        labelStyle: labelMedium,
+        hintStyle: labelMedium.copyWith(color: textLight),
       ),
 
-      // SearchBar Theme
+      // SearchBar
       searchBarTheme: SearchBarThemeData(
         backgroundColor: WidgetStateProperty.all(surfaceColor),
         elevation: WidgetStateProperty.all(0),
         shape: WidgetStateProperty.all(
           RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radiusMedium),
+            side: const BorderSide(color: mutedColor),
           ),
         ),
         padding: WidgetStateProperty.all(
-          const EdgeInsets.symmetric(horizontal: spacingM),
+          const EdgeInsets.symmetric(horizontal: spacingS),
         ),
         textStyle: WidgetStateProperty.all(bodyMedium),
         hintStyle: WidgetStateProperty.all(
@@ -262,52 +301,50 @@ class AppTheme {
         ),
       ),
 
-      // Button Themes
+      // Elevated Button — button-secondary: dark green + white text
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: primaryGreen,
+          backgroundColor: primaryColor,
           foregroundColor: white,
-          elevation: elevationLow,
+          elevation: 0,
           padding: const EdgeInsets.symmetric(
-            horizontal: spacingL,
-            vertical: spacingM,
+            horizontal: 30,
+            vertical: 10,
           ),
+          minimumSize: const Size(0, 38),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radiusMedium),
           ),
-          textStyle: labelLarge,
+          textStyle: labelLarge.copyWith(fontFamily: fontFamily),
         ),
       ),
 
+      // Outlined Button
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: primaryGreen,
-          side: const BorderSide(color: primaryGreen, width: 2),
-          padding: const EdgeInsets.symmetric(
-            horizontal: spacingL,
-            vertical: spacingM,
-          ),
+          foregroundColor: primaryColor,
+          side: const BorderSide(color: primaryColor, width: 1.5),
+          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+          minimumSize: const Size(0, 38),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radiusMedium),
           ),
-          textStyle: labelLarge.copyWith(color: primaryGreen),
+          textStyle: labelLarge.copyWith(fontFamily: fontFamily),
         ),
       ),
 
+      // Text Button — link style
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: primaryGreen,
-          padding: const EdgeInsets.symmetric(
-            horizontal: spacingM,
-            vertical: spacingS,
-          ),
-          textStyle: labelMedium,
+          foregroundColor: secondaryColor,
+          padding: const EdgeInsets.symmetric(horizontal: spacingXS, vertical: 0),
+          textStyle: labelLarge.copyWith(fontFamily: fontFamily),
         ),
       ),
 
-      // Icon Theme
+      // Icon
       iconTheme: const IconThemeData(
-        color: primaryGreen,
+        color: primaryColor,
         size: 24,
       ),
 
@@ -323,37 +360,37 @@ class AppTheme {
         bodySmall: bodySmall,
         labelLarge: labelLarge,
         labelMedium: labelMedium,
+        labelSmall: labelSmall,
       ),
 
-      // Divider Theme
-      dividerTheme: DividerThemeData(
-        color: textLight.withValues(alpha: 0.2),
+      // Divider
+      dividerTheme: const DividerThemeData(
+        color: mutedColor,
         thickness: 1,
-        space: spacingM,
+        space: spacingS,
       ),
 
-      // Chip Theme
+      // Chip — accent aqua, full rounding
       chipTheme: ChipThemeData(
-        backgroundColor: surfaceColor,
-        selectedColor: lightGreen,
-        labelStyle: labelMedium,
+        backgroundColor: accentColor,
+        labelStyle: labelMedium.copyWith(color: white),
         padding: const EdgeInsets.symmetric(
-          horizontal: spacingM,
-          vertical: spacingS,
+          horizontal: spacingS,
+          vertical: spacingXS,
         ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(radiusSmall),
+          borderRadius: BorderRadius.circular(radiusFull),
         ),
       ),
     );
   }
 
-  // Helper method to get severity color
+  // ── Helper methods ────────────────────────────────────────────────────────
   static Color getSeverityColor(String severity) {
     switch (severity.toLowerCase()) {
       case 'severe':
       case 'parah':
-        return errorRed;
+        return errorColor;
       case 'moderate':
       case 'sedang':
         return warningYellow;
@@ -368,14 +405,13 @@ class AppTheme {
     }
   }
 
-  // Helper method to get accuracy badge color
   static Color getAccuracyColor(double accuracy) {
     if (accuracy >= 0.8) {
       return successGreen;
     } else if (accuracy >= 0.6) {
       return warningYellow;
     } else {
-      return errorRed;
+      return errorColor;
     }
   }
 }
